@@ -4,7 +4,7 @@ Final Project for Fullstack training.
 
 ## Screenshots
 
-![App Screenshot!](C:\Users\COLLABERA\Documents\Collabera\Training\Final Project (Digital Streaming System)\dss-final-project\dashboard.png)
+![App Screenshot!](dashboard.png)
 
 ## Run Locally
 
