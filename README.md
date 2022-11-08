@@ -1,13 +1,10 @@
-
 # DIGITAL STREAMING SYSTEM
 
 Final Project for Fullstack training.
 
-
 ## Screenshots
 
-![App Screenshot](https://drive.google.com/file/d/1NnIoJsL_ll9ZmdUcZZBpHrEwt-dUdG8f/view?usp=share_link)
-
+![App Screenshot!](C:\Users\COLLABERA\Documents\Collabera\Training\Final Project (Digital Streaming System)\dss-final-project\dashboard.png)
 
 ## Run Locally
 
@@ -57,15 +54,14 @@ Start the server
   npm run start
 ```
 
-
 ## Authors
 
 - [@eric](https://github.com/e-ramos18)
 
-
 ## Features
 
 Admin
+
 - Register, Login
 - View, Create, Update, Delete Movies
 - View, Create, Update, Delete Actors
@@ -73,11 +69,8 @@ Admin
 - Search Movies, Actors, Users, Reviews
 
 User
+
 - Register, Login
 - View Movies, Actors, Reviews
 - Write Reviews
 - Search Movies, Actors, Reviews
-
-
-
-
