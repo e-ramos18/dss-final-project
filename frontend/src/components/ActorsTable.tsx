@@ -112,6 +112,59 @@ const ActorsTable = () => {
     setOpenDelete(false);
   };
 
+  const renderTableBody = () => {
+    if (filteredActors && filteredActors.length > 0) {
+      if (rowsPerPage > 0) {
+        return filteredActors
+          .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+          .map((actor: IActor) => (
+            <TableRow
+              key={actor.id}
+              sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
+            >
+              <TableCell align="center">{actor.fname}</TableCell>
+              <TableCell align="center">{actor.lname}</TableCell>
+              <TableCell align="center">{actor.gender}</TableCell>
+              <TableCell align="center">
+                <Button onClick={() => handleOpenEdit(actor)}>Edit</Button>
+                <Button
+                  color="error"
+                  onClick={() => handleOpenDelete(actor.id)}
+                >
+                  Delete
+                </Button>
+              </TableCell>
+            </TableRow>
+          ));
+      } else {
+        return filteredActors.map((actor: IActor) => (
+          <TableRow
+            key={actor.id}
+            sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
+          >
+            <TableCell align="center">{actor.fname}</TableCell>
+            <TableCell align="center">{actor.lname}</TableCell>
+            <TableCell align="center">{actor.gender}</TableCell>
+            <TableCell align="center">
+              <Button onClick={() => handleOpenEdit(actor)}>Edit</Button>
+              <Button color="error" onClick={() => handleOpenDelete(actor.id)}>
+                Delete
+              </Button>
+            </TableCell>
+          </TableRow>
+        ));
+      }
+    } else {
+      return (
+        <TableRow>
+          <TableCell align="center" colSpan={5}>
+            No data
+          </TableCell>
+        </TableRow>
+      );
+    }
+  };
+
   return (
     <>
       <Typography variant="h6">Actors Table</Typography>
@@ -164,41 +217,7 @@ const ActorsTable = () => {
               <TableCell align="center">Action</TableCell>
             </TableRow>
           </TableHead>
-          <TableBody>
-            {filteredActors && filteredActors.length > 0 ? (
-              (rowsPerPage > 0
-                ? filteredActors.slice(
-                    page * rowsPerPage,
-                    page * rowsPerPage + rowsPerPage
-                  )
-                : filteredActors
-              ).map((actor: IActor) => (
-                <TableRow
-                  key={actor.id}
-                  sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
-                >
-                  <TableCell align="center">{actor.fname}</TableCell>
-                  <TableCell align="center">{actor.lname}</TableCell>
-                  <TableCell align="center">{actor.gender}</TableCell>
-                  <TableCell align="center">
-                    <Button onClick={() => handleOpenEdit(actor)}>Edit</Button>
-                    <Button
-                      color="error"
-                      onClick={() => handleOpenDelete(actor.id)}
-                    >
-                      Delete
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell align="center" colSpan={5}>
-                  No data
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
+          <TableBody>{renderTableBody()}</TableBody>
           <TableFooter>
             <TableRow>
               <TablePagination

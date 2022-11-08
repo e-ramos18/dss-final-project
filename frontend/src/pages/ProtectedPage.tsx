@@ -10,15 +10,14 @@ const ProtectedPage = () => {
   const { setErrorMessage } = useContext(ErrorContext) as ErrorContextType;
   const [loading, setLoading] = useState(false);
 
-  const token = getItem("token");
-  if (!token) {
-    return <Navigate to="/login" replace />;
-  }
-
   useEffect(() => {
     onMount();
   }, []);
   const onMount = async () => {
+    const token = getItem("token");
+    if (!token) {
+      return <Navigate to="/login" replace />;
+    }
     setLoading(true);
     const res: APIResponse = await getCurrentUser();
     if (!res.data && res.error) {

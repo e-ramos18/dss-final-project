@@ -1,6 +1,6 @@
 import SearchAppBar from "../components/SearchAppBar";
 import { Outlet } from "react-router-dom";
-import { Box, Container, Paper } from "@mui/material";
+import { Container, Paper } from "@mui/material";
 
 const Home = () => {
   return (

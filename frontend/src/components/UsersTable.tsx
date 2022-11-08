@@ -125,6 +125,116 @@ const UsersTable = () => {
     setOpenDelete(false);
   };
 
+  const renderTableBody = () => {
+    if (filteredUsers && filteredUsers.length > 0) {
+      if (rowsPerPage > 0) {
+        return filteredUsers
+          .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+          .map((user: IUser) => (
+            <TableRow
+              key={user.id}
+              sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
+            >
+              <TableCell align="center">{user.email}</TableCell>
+              <TableCell align="center">{user.name}</TableCell>
+              <TableCell align="center">{user.role}</TableCell>
+              <TableCell align="center">
+                {user.isApproved ? (
+                  <Tooltip title="Click to disapprove User">
+                    <Chip
+                      disabled={user.role === Roles.RootAdmin}
+                      icon={<HowToRegIcon />}
+                      label="approved"
+                      color="success"
+                      onClick={() => approveUser(user, false)}
+                    />
+                  </Tooltip>
+                ) : (
+                  <Tooltip title="Click to approve User">
+                    <Chip
+                      icon={<HowToRegIcon />}
+                      label="to approved"
+                      onClick={() => approveUser(user, true)}
+                    />
+                  </Tooltip>
+                )}
+              </TableCell>
+              <TableCell align="center">
+                <Button
+                  onClick={() => handleOpenEdit(user)}
+                  disabled={user.role === Roles.RootAdmin}
+                >
+                  Edit
+                </Button>
+                <Button
+                  color="error"
+                  onClick={() => handleOpenDelete(user.id)}
+                  disabled={user.role === Roles.RootAdmin}
+                >
+                  Delete
+                </Button>
+              </TableCell>
+            </TableRow>
+          ));
+      } else {
+        return filteredUsers.map((user: IUser) => (
+          <TableRow
+            key={user.id}
+            sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
+          >
+            <TableCell align="center">{user.email}</TableCell>
+            <TableCell align="center">{user.name}</TableCell>
+            <TableCell align="center">{user.role}</TableCell>
+            <TableCell align="center">
+              {user.isApproved ? (
+                <Tooltip title="Click to disapprove User">
+                  <Chip
+                    disabled={user.role === Roles.RootAdmin}
+                    icon={<HowToRegIcon />}
+                    label="approved"
+                    color="success"
+                    onClick={() => approveUser(user, false)}
+                  />
+                </Tooltip>
+              ) : (
+                <Tooltip title="Click to approve User">
+                  <Chip
+                    icon={<HowToRegIcon />}
+                    label="to approved"
+                    onClick={() => approveUser(user, true)}
+                  />
+                </Tooltip>
+              )}
+            </TableCell>
+            <TableCell align="center">
+              <Button
+                onClick={() => handleOpenEdit(user)}
+                disabled={user.role === Roles.RootAdmin}
+              >
+                Edit
+              </Button>
+              <Button
+                color="error"
+                onClick={() => handleOpenDelete(user.id)}
+                disabled={user.role === Roles.RootAdmin}
+              >
+                Delete
+              </Button>
+            </TableCell>
+          </TableRow>
+        ));
+      }
+    } else {
+      return (
+        <TableRow>
+          <TableCell align="center" colSpan={5}>
+            No data
+          </TableCell>
+        </TableRow>
+      );
+    }
+  };
+
   return (
     <>
       <Typography variant="h6">Users Table</Typography>
@@ -178,68 +288,7 @@ const UsersTable = () => {
               <TableCell align="center">Action</TableCell>
             </TableRow>
           </TableHead>
-          <TableBody>
-            {filteredUsers && filteredUsers.length > 0 ? (
-              (rowsPerPage > 0
-                ? filteredUsers.slice(
-                    page * rowsPerPage,
-                    page * rowsPerPage + rowsPerPage
-                  )
-                : filteredUsers
-              ).map((user: IUser) => (
-                <TableRow
-                  key={user.id}
-                  sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
-                >
-                  <TableCell align="center">{user.email}</TableCell>
-                  <TableCell align="center">{user.name}</TableCell>
-                  <TableCell align="center">{user.role}</TableCell>
-                  <TableCell align="center">
-                    {user.isApproved ? (
-                      <Tooltip title="Click to disapprove User">
-                        <Chip
-                          disabled={user.role === Roles.RootAdmin}
-                          icon={<HowToRegIcon />}
-                          label="approved"
-                          color="success"
-                          onClick={() => approveUser(user, false)}
-                        />
-                      </Tooltip>
-                    ) : (
-                      <Tooltip title="Click to approve User">
-                        <Chip
-                          icon={<HowToRegIcon />}
-                          label="to approved"
-                          onClick={() => approveUser(user, true)}
-                        />
-                      </Tooltip>
-                    )}
-                  </TableCell>
-                  <TableCell align="center">
-                    <Button
-                      onClick={() => handleOpenEdit(user)}
-                      disabled={user.role === Roles.RootAdmin}
-                    >
-                      Edit
-                    </Button>
-                    <Button
-                      color="error"
-                      onClick={() => handleOpenDelete(user.id)}
-                      disabled={user.role === Roles.RootAdmin}
-                    >
-                      Delete
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell align="center" colSpan={5}>
-                  No data
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
+          <TableBody>{renderTableBody()}</TableBody>
           <TableFooter>
             <TableRow>
               <TablePagination

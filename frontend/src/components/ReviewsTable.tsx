@@ -90,6 +90,94 @@ const ReviewsTable = () => {
     }
   };
 
+  const renderTableBody = () => {
+    if (filteredReviews && filteredReviews.length > 0) {
+      if (rowsPerPage > 0) {
+        return filteredReviews
+          .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+          .map((review: IReview) => (
+            <TableRow
+              key={review.id}
+              sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
+            >
+              <TableCell>{review.movie?.title}</TableCell>
+              <TableCell>{review.user?.name}</TableCell>
+              <TableCell>
+                <div className="ellipse">{review.description}</div>
+              </TableCell>
+              <TableCell>
+                <Rating name="read-only" value={review.rating} readOnly />
+              </TableCell>
+              <TableCell>
+                {review.isApproved ? (
+                  <Tooltip title="Click to disapprove rating">
+                    <Chip
+                      icon={<HowToRegIcon />}
+                      label="approved"
+                      color="success"
+                      onClick={() => approveReview(review, false)}
+                    />
+                  </Tooltip>
+                ) : (
+                  <Tooltip title="Click to approve rating">
+                    <Chip
+                      icon={<HowToRegIcon />}
+                      label="to approved"
+                      onClick={() => approveReview(review, true)}
+                    />
+                  </Tooltip>
+                )}
+              </TableCell>
+            </TableRow>
+          ));
+      } else {
+        return filteredReviews.map((review: IReview) => (
+          <TableRow
+            key={review.id}
+            sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
+          >
+            <TableCell>{review.movie?.title}</TableCell>
+            <TableCell>{review.user?.name}</TableCell>
+            <TableCell>
+              <div className="ellipse">{review.description}</div>
+            </TableCell>
+            <TableCell>
+              <Rating name="read-only" value={review.rating} readOnly />
+            </TableCell>
+            <TableCell>
+              {review.isApproved ? (
+                <Tooltip title="Click to disapprove rating">
+                  <Chip
+                    icon={<HowToRegIcon />}
+                    label="approved"
+                    color="success"
+                    onClick={() => approveReview(review, false)}
+                  />
+                </Tooltip>
+              ) : (
+                <Tooltip title="Click to approve rating">
+                  <Chip
+                    icon={<HowToRegIcon />}
+                    label="to approved"
+                    onClick={() => approveReview(review, true)}
+                  />
+                </Tooltip>
+              )}
+            </TableCell>
+          </TableRow>
+        ));
+      }
+    } else {
+      return (
+        <TableRow>
+          <TableCell align="center" colSpan={5}>
+            No data
+          </TableCell>
+        </TableRow>
+      );
+    }
+  };
+
   return (
     <>
       <Typography variant="h6">Reviews Table</Typography>
@@ -137,57 +225,7 @@ const ReviewsTable = () => {
               <TableCell>Status</TableCell>
             </TableRow>
           </TableHead>
-          <TableBody>
-            {filteredReviews && filteredReviews.length > 0 ? (
-              (rowsPerPage > 0
-                ? filteredReviews.slice(
-                    page * rowsPerPage,
-                    page * rowsPerPage + rowsPerPage
-                  )
-                : filteredReviews
-              ).map((review: IReview) => (
-                <TableRow
-                  key={review.id}
-                  sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
-                >
-                  <TableCell>{review.movie?.title}</TableCell>
-                  <TableCell>{review.user?.name}</TableCell>
-                  <TableCell>
-                    <div className="ellipse">{review.description}</div>
-                  </TableCell>
-                  <TableCell>
-                    <Rating name="read-only" value={review.rating} readOnly />
-                  </TableCell>
-                  <TableCell>
-                    {review.isApproved ? (
-                      <Tooltip title="Click to disapprove rating">
-                        <Chip
-                          icon={<HowToRegIcon />}
-                          label="approved"
-                          color="success"
-                          onClick={() => approveReview(review, false)}
-                        />
-                      </Tooltip>
-                    ) : (
-                      <Tooltip title="Click to approve rating">
-                        <Chip
-                          icon={<HowToRegIcon />}
-                          label="to approved"
-                          onClick={() => approveReview(review, true)}
-                        />
-                      </Tooltip>
-                    )}
-                  </TableCell>
-                </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell align="center" colSpan={5}>
-                  No data
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
+          <TableBody>{renderTableBody()}</TableBody>
           <TableFooter>
             <TableRow>
               <TablePagination

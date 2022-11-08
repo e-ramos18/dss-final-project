@@ -9,7 +9,6 @@ import {
   Movies,
 } from "./pages";
 import ErrorProvider from "./context/ErrorProvider";
-import UserPage from "./pages/UserPage";
 import { Provider } from "react-redux";
 import store from "./redux/store";
 import Reviews from "./pages/Reviews";

@@ -12,7 +12,7 @@ import { useContext, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../redux/hooks";
 import { ErrorContext, ErrorContextType } from "../context/ErrorProvider";
 import { IActor } from "../types";
-import { addActor, editActor } from "../misc/actor";
+import { editActor } from "../misc/actor";
 
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
   "& .MuiDialogContent-root": {

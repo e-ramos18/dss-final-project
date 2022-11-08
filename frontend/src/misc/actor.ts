@@ -1,5 +1,5 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import { IActor, IMovie } from "../types";
+import { IActor } from "../types";
 import { getItem } from "../utils";
 import api from "./api";
 

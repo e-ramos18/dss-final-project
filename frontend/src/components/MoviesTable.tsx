@@ -121,6 +121,64 @@ const MoviesTable = () => {
     setOpenDelete(false);
   };
 
+  const renderTableBody = () => {
+    if (filteredMovies && filteredMovies.length > 0) {
+      if (rowsPerPage > 0) {
+        return filteredMovies
+          .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+          .map((movie: IMovie, index) => (
+            <TableRow
+              key={index}
+              sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
+            >
+              <TableCell align="center">{movie.title}</TableCell>
+              <TableCell align="center">{movie.cost}</TableCell>
+              <TableCell align="center">{movie.year}</TableCell>
+              <TableCell align="center">
+                <Button onClick={() => handleOpenEdit(movie)}>Edit</Button>
+                <Button
+                  disabled={compareYear(movie.year)}
+                  color="error"
+                  onClick={() => handleOpenDelete(movie.id)}
+                >
+                  Delete
+                </Button>
+              </TableCell>
+            </TableRow>
+          ));
+      } else {
+        return filteredMovies.map((movie: IMovie, index) => (
+          <TableRow
+            key={index}
+            sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
+          >
+            <TableCell align="center">{movie.title}</TableCell>
+            <TableCell align="center">{movie.cost}</TableCell>
+            <TableCell align="center">{movie.year}</TableCell>
+            <TableCell align="center">
+              <Button onClick={() => handleOpenEdit(movie)}>Edit</Button>
+              <Button
+                disabled={compareYear(movie.year)}
+                color="error"
+                onClick={() => handleOpenDelete(movie.id)}
+              >
+                Delete
+              </Button>
+            </TableCell>
+          </TableRow>
+        ));
+      }
+    } else {
+      return (
+        <TableRow>
+          <TableCell align="center" colSpan={5}>
+            No data
+          </TableCell>
+        </TableRow>
+      );
+    }
+  };
+
   return (
     <>
       <Typography variant="h6">Movies Table</Typography>
@@ -172,42 +230,7 @@ const MoviesTable = () => {
               <TableCell align="center">Action</TableCell>
             </TableRow>
           </TableHead>
-          <TableBody>
-            {filteredMovies && filteredMovies.length > 0 ? (
-              (rowsPerPage > 0
-                ? filteredMovies.slice(
-                    page * rowsPerPage,
-                    page * rowsPerPage + rowsPerPage
-                  )
-                : filteredMovies
-              ).map((movie: IMovie, index) => (
-                <TableRow
-                  key={index}
-                  sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
-                >
-                  <TableCell align="center">{movie.title}</TableCell>
-                  <TableCell align="center">{movie.cost}</TableCell>
-                  <TableCell align="center">{movie.year}</TableCell>
-                  <TableCell align="center">
-                    <Button onClick={() => handleOpenEdit(movie)}>Edit</Button>
-                    <Button
-                      disabled={compareYear(movie.year)}
-                      color="error"
-                      onClick={() => handleOpenDelete(movie.id)}
-                    >
-                      Delete
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell align="center" colSpan={5}>
-                  No data
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
+          <TableBody>{renderTableBody()}</TableBody>
           <TableFooter>
             <TableRow>
               <TablePagination

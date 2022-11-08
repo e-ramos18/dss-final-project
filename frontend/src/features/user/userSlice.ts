@@ -1,4 +1,4 @@
-import { createReducer, createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { addUser, deleteUser, editUser, fetchUsers } from "../../misc/user";
 import { IUser } from "../../types";
 
