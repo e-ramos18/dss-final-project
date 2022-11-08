@@ -74,4 +74,4 @@ export interface MovieRelations {
   // describe navigational properties here
 }
 
-export type MovieWithRelations = Movie & MovieRelations;
+export type MovieWithRelations = Movie;

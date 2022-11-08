@@ -54,4 +54,4 @@ export interface ReviewRelations {
   // describe navigational properties here
 }
 
-export type ReviewWithRelations = Review & ReviewRelations;
+export type ReviewWithRelations = Review;

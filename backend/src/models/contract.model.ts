@@ -36,4 +36,4 @@ export interface ContractRelations {
   // describe navigational properties here
 }
 
-export type ContractWithRelations = Contract & ContractRelations;
+export type ContractWithRelations = Contract;

@@ -66,4 +66,4 @@ export interface ActorRelations {
   // describe navigational properties here
 }
 
-export type ActorWithRelations = Actor & ActorRelations;
+export type ActorWithRelations = Actor;
