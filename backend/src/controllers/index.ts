@@ -3,8 +3,3 @@ export * from './user.controller';
 export * from './movie.controller';
 export * from './actor.controller';
 export * from './review.controller';
-export * from './review-movie.controller';
-export * from './movie-review.controller';
-export * from './movie-actor.controller';
-export * from './contract.controller';
-export * from './review-user.controller';
