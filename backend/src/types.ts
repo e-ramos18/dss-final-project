@@ -11,3 +11,9 @@ export interface MyUserProfile {
   role: Roles;
   isApproved: boolean;
 }
+
+export type CustomResponse<T> = {
+  success: boolean;
+  data: T | T[] | null;
+  message: string;
+};

@@ -39,9 +39,8 @@ export class Movie extends Entity {
   @property({
     type: 'array',
     itemType: 'string',
-    required: true,
   })
-  actorsIds: string[];
+  actorsIds?: string[];
 
   @property({
     type: 'string',
@@ -57,7 +56,9 @@ export class Movie extends Entity {
   @hasMany(() => Review, {keyTo: 'movieId'})
   reviews: Review[];
 
-  @hasMany(() => Actor, {through: {model: () => Contract}})
+  @hasMany(() => Actor, {
+    through: {model: () => Contract, keyFrom: 'movieId', keyTo: 'actorId'},
+  })
   actors: Actor[];
   // Define well-known properties here
 
