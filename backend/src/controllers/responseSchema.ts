@@ -1,5 +1,5 @@
 import {getModelSchemaRef} from '@loopback/rest';
-import {Movie} from '../models';
+import {Movie, User} from '../models';
 
 export const movieResponseSchema = {
   addMovie: {
@@ -32,7 +32,7 @@ export const movieResponseSchema = {
               type: 'boolean',
             },
             data: {
-              type: Array,
+              type: 'array',
               items: getModelSchemaRef(Movie, {
                 includeRelations: true,
               }),
@@ -85,6 +85,168 @@ export const movieResponseSchema = {
   },
   deleteMovie: {
     description: 'Movie DELETE success, returns deleted movie id',
+    content: {
+      'application/json': {
+        schema: {
+          type: 'object',
+          properties: {
+            success: {
+              type: 'boolean',
+            },
+            data: {
+              type: 'string',
+            },
+            message: {
+              type: 'string',
+            },
+          },
+        },
+      },
+    },
+  },
+};
+
+export const userResponseSchema = {
+  register: {
+    description: 'User model instance',
+    content: {
+      'application/json': {
+        schema: {
+          type: 'object',
+          properties: {
+            success: {
+              type: 'boolean',
+            },
+            data: getModelSchemaRef(User),
+            message: {
+              type: 'string',
+            },
+          },
+        },
+      },
+    },
+  },
+  login: {
+    description: 'Token',
+    content: {
+      'application/json': {
+        schema: {
+          type: 'object',
+          properties: {
+            success: {
+              type: 'boolean',
+            },
+            data: {
+              type: 'string',
+            },
+            message: {
+              type: 'string',
+            },
+          },
+        },
+      },
+    },
+  },
+  currentUser: {
+    description: 'Get current user',
+    content: {
+      'application/json': {
+        schema: {
+          type: 'object',
+          properties: {
+            success: {
+              type: 'boolean',
+            },
+            data: getModelSchemaRef(User),
+            message: {
+              type: 'string',
+            },
+          },
+        },
+      },
+    },
+  },
+  addUser: {
+    description: 'User model instance',
+    content: {
+      'application/json': {
+        schema: {
+          type: 'object',
+          properties: {
+            success: {
+              type: 'boolean',
+            },
+            data: getModelSchemaRef(User),
+            message: {
+              type: 'string',
+            },
+          },
+        },
+      },
+    },
+  },
+  fetchUsers: {
+    description: 'Array of User model instances',
+    content: {
+      'application/json': {
+        schema: {
+          type: 'object',
+          properties: {
+            success: {
+              type: 'boolean',
+            },
+            data: {
+              type: 'array',
+              items: getModelSchemaRef(User),
+            },
+            message: {
+              type: 'string',
+            },
+          },
+        },
+      },
+    },
+  },
+  fetchUser: {
+    description: 'User model instance',
+    content: {
+      'application/json': {
+        schema: {
+          type: 'object',
+          properties: {
+            success: {
+              type: 'boolean',
+            },
+            data: getModelSchemaRef(User),
+            message: {
+              type: 'string',
+            },
+          },
+        },
+      },
+    },
+  },
+  updateUser: {
+    description: 'User model instance',
+    content: {
+      'application/json': {
+        schema: {
+          type: 'object',
+          properties: {
+            success: {
+              type: 'boolean',
+            },
+            data: getModelSchemaRef(User),
+            message: {
+              type: 'string',
+            },
+          },
+        },
+      },
+    },
+  },
+  deleteMovie: {
+    description: 'User DELETE success, returns deleted user id',
     content: {
       'application/json': {
         schema: {

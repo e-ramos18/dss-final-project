@@ -1,13 +1,6 @@
 import {authenticate, AuthenticationBindings} from '@loopback/authentication';
 import {inject} from '@loopback/core';
-import {
-  Count,
-  CountSchema,
-  Filter,
-  FilterExcludingWhere,
-  repository,
-  Where,
-} from '@loopback/repository';
+import {Filter, FilterExcludingWhere, repository} from '@loopback/repository';
 import {
   del,
   get,
@@ -16,7 +9,6 @@ import {
   param,
   patch,
   post,
-  put,
   requestBody,
   response,
 } from '@loopback/rest';
@@ -34,6 +26,10 @@ import {validateCredentials} from '../services';
 import {BcryptHasher} from '../services/hash.password';
 import {JWTService} from '../services/jwt-service';
 import {MyUserService} from '../services/user-service';
+import {CustomResponse} from '../types';
+import {responseMessage} from '../utils/constants';
+import {tryCatch} from '../utils/helper';
+import {userResponseSchema} from './responseSchema';
 
 export class UserController {
   constructor(
@@ -54,49 +50,45 @@ export class UserController {
   ) {}
 
   @post('/users/signup')
-  @response(200, {
-    description: 'User model instance',
-    content: {'application/json': {schema: getModelSchemaRef(User)}},
-  })
-  async signup(@requestBody() userData: User) {
-    validateCredentials(_.pick(userData, ['email', 'password']));
-    userData.password = await this.hasher.hashPassword(userData.password);
-    try {
-      const savedUser = await this.userRepository.create(userData);
-      return _.omit(savedUser, ['password']);
-    } catch (error) {
-      if (error.code === 11000) {
-        throw new HttpErrors.Conflict('Email is already taken.');
-      }
-      throw error;
-    }
+  @response(200, userResponseSchema.register)
+  async signup(@requestBody() userData: User): Promise<CustomResponse<{}>> {
+    const res = await tryCatch(
+      async () => {
+        validateCredentials(_.pick(userData, ['email', 'password']));
+        userData.password = await this.hasher.hashPassword(userData.password);
+        try {
+          const savedUser = await this.userRepository.create(userData);
+          return _.omit(savedUser, ['password']);
+        } catch (error) {
+          if (error.code === 11000) {
+            throw new HttpErrors.Conflict('Email is already taken.');
+          }
+          throw error;
+        }
+      },
+      null,
+      responseMessage.registered,
+    );
+    return res;
   }
 
   @post('/users/login')
-  @response(200, {
-    description: 'Token',
-    content: {
-      'application/json': {
-        schema: {
-          type: 'object',
-          properties: {
-            token: {
-              type: 'string',
-            },
-          },
-        },
-      },
-    },
-  })
+  @response(200, userResponseSchema.login)
   async login(
     @requestBody() credentials: Credentials,
-  ): Promise<{token: string}> {
-    // make sure user exist,password should be valid
-    const user = await this.userService.verifyCredentials(credentials);
-    const userProfile = this.userService.convertToUserProfile(user);
+  ): Promise<CustomResponse<{}>> {
+    const res = await tryCatch(
+      async () => {
+        // make sure user exist,password should be valid
+        const user = await this.userService.verifyCredentials(credentials);
+        const userProfile = this.userService.convertToUserProfile(user);
 
-    const token = await this.jwtService.generateToken(userProfile);
-    return Promise.resolve({token: token});
+        return this.jwtService.generateToken(userProfile);
+      },
+      null,
+      responseMessage.loggedin,
+    );
+    return res;
   }
 
   @authenticate({
@@ -104,15 +96,19 @@ export class UserController {
     options: {required: [Roles.RootAdmin, Roles.Admin, Roles.User]},
   })
   @get('/users/me')
-  @response(200, {
-    description: 'The current user profile',
-    content: {'application/json': {schema: getModelSchemaRef(User)}},
-  })
+  @response(200, userResponseSchema.currentUser)
   async me(
     @inject(AuthenticationBindings.CURRENT_USER)
     currentUser: UserProfile,
-  ): Promise<UserProfile> {
-    return Promise.resolve(currentUser);
+  ): Promise<CustomResponse<{}>> {
+    const res = await tryCatch(
+      async () => {
+        return Promise.resolve(currentUser);
+      },
+      null,
+      responseMessage.getCurrentUser,
+    );
+    return res;
   }
 
   @authenticate({
@@ -120,66 +116,55 @@ export class UserController {
     options: {required: [Roles.RootAdmin, Roles.Admin]},
   })
   @post('/users')
-  @response(200, {
-    description: 'User model instance',
-    content: {'application/json': {schema: getModelSchemaRef(User)}},
-  })
-  async create(@requestBody() user: User) {
-    validateCredentials(_.pick(user, ['email', 'password']));
-    user.password = await this.hasher.hashPassword(user.password);
-    const savedUser = await this.userRepository.create(user);
-    return _.omit(savedUser, ['password']);
-  }
-
-  @authenticate({
-    strategy: 'jwt',
-    options: {required: [Roles.RootAdmin, Roles.Admin]},
-  })
-  @get('/users/count')
-  @response(200, {
-    description: 'User model count',
-    content: {'application/json': {schema: CountSchema}},
-  })
-  async count(@param.where(User) where?: Where<User>): Promise<Count> {
-    return this.userRepository.count(where);
+  @response(200, userResponseSchema.addUser)
+  async create(@requestBody() user: User): Promise<CustomResponse<{}>> {
+    const res = tryCatch(
+      async () => {
+        validateCredentials(_.pick(user, ['email', 'password']));
+        user.password = await this.hasher.hashPassword(user.password);
+        const savedUser = await this.userRepository.create(user);
+        return _.omit(savedUser, ['password']);
+      },
+      null,
+      responseMessage.addedUser,
+    );
+    return res;
   }
 
   @get('/users')
-  @response(200, {
-    description: 'Array of User model instances',
-    content: {
-      'application/json': {
-        schema: {
-          type: 'array',
-          items: getModelSchemaRef(User, {includeRelations: true}),
-        },
+  @response(200, userResponseSchema.fetchUsers)
+  async find(
+    @param.filter(User) filter?: Filter<User>,
+  ): Promise<CustomResponse<{}>> {
+    const res = await tryCatch(
+      async () => {
+        return this.userRepository.find(filter, {
+          fields: ['id', 'email', 'name', 'role', 'isApproved', 'createdAt'],
+        });
       },
-    },
-  })
-  async find(@param.filter(User) filter?: Filter<User>): Promise<User[]> {
-    return this.userRepository.find(filter, {
-      fields: ['id', 'email', 'name', 'role', 'isApproved', 'createdAt'],
-    });
+      [],
+      responseMessage.fetchedUsers,
+    );
+    return res;
   }
 
   @authenticate({
     strategy: 'jwt',
-    options: {required: [Roles.RootAdmin, Roles.Admin, Roles.User]},
   })
   @get('/users/{id}')
-  @response(200, {
-    description: 'User model instance',
-    content: {
-      'application/json': {
-        schema: getModelSchemaRef(User, {includeRelations: true}),
-      },
-    },
-  })
+  @response(200, userResponseSchema.fetchUser)
   async findById(
     @param.path.string('id') id: string,
     @param.filter(User, {exclude: 'where'}) filter?: FilterExcludingWhere<User>,
-  ): Promise<User> {
-    return this.userRepository.findById(id, filter);
+  ): Promise<CustomResponse<{}>> {
+    const res = tryCatch(
+      async () => {
+        return this.userRepository.findById(id, filter);
+      },
+      null,
+      responseMessage.fetchedUser,
+    );
+    return res;
   }
 
   @authenticate({
@@ -187,9 +172,7 @@ export class UserController {
     options: {required: [Roles.RootAdmin, Roles.Admin]},
   })
   @patch('/users/{id}')
-  @response(204, {
-    description: 'User PATCH success',
-  })
+  @response(204, userResponseSchema.updateUser)
   async updateById(
     @param.path.string('id') id: string,
     @requestBody({
@@ -200,25 +183,17 @@ export class UserController {
       },
     })
     user: User,
-  ) {
-    await this.userRepository.updateById(id, user);
-    const savedUser = await this.userRepository.findById(id);
-    return _.omit(savedUser, ['password']);
-  }
-
-  @authenticate({
-    strategy: 'jwt',
-    options: {required: [Roles.RootAdmin, Roles.Admin]},
-  })
-  @put('/users/{id}')
-  @response(204, {
-    description: 'User PUT success',
-  })
-  async replaceById(
-    @param.path.string('id') id: string,
-    @requestBody() user: User,
-  ): Promise<void> {
-    await this.userRepository.replaceById(id, user);
+  ): Promise<CustomResponse<{}>> {
+    const res = await tryCatch(
+      async () => {
+        await this.userRepository.updateById(id, user);
+        const savedUser = await this.userRepository.findById(id);
+        return _.omit(savedUser, ['password']);
+      },
+      null,
+      responseMessage.updatedUser,
+    );
+    return res;
   }
 
   @authenticate({
@@ -226,11 +201,18 @@ export class UserController {
     options: {required: [Roles.RootAdmin, Roles.Admin]},
   })
   @del('/users/{id}')
-  @response(204, {
-    description: 'User DELETE success',
-  })
-  async deleteById(@param.path.string('id') id: string): Promise<string> {
-    await this.userRepository.deleteById(id);
-    return id;
+  @response(204, userResponseSchema)
+  async deleteById(
+    @param.path.string('id') id: string,
+  ): Promise<CustomResponse<{}>> {
+    const res = await tryCatch(
+      async () => {
+        await this.userRepository.deleteById(id);
+        return id;
+      },
+      null,
+      responseMessage.deletedUser,
+    );
+    return res;
   }
 }
