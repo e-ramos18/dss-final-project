@@ -13,4 +13,13 @@ export const responseMessage = {
   fetchedUser: 'Fetch user successfully.',
   updatedUser: 'Updated user successfully.',
   deletedUser: 'Deleted user successfully.',
+  addedActor: 'Added actor successfully.',
+  fetchedActors: 'Fetched all actors successfully.',
+  fetchedActor: 'Fetch actor successfully.',
+  updatedActor: 'Updated actor successfully.',
+  deletedActor: 'Deleted actor successfully.',
+  addedReview: 'Added review successfully.',
+  fetchedReviews: 'Fetched all reviews successfully.',
+  fetchedReview: 'Fetch review successfully.',
+  updatedReview: 'Updated review successfully.',
 };
