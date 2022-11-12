@@ -132,4 +132,30 @@ export class ActorController {
     );
     return res;
   }
+
+  @get('/actors/{key}/search')
+  @response(200, actorResponseSchema.fetchActors)
+  async searchByName(
+    @param.path.string('key') key: string,
+  ): Promise<CustomResponse<{}>> {
+    const res = tryCatch(
+      async () => {
+        const searchParams = [
+          {fname: {like: key || '', options: 'i'}},
+          {lname: {like: key || '', options: 'i'}},
+          {email: {like: key || '', options: 'i'}},
+        ];
+        const objFilter = {
+          where: {or: searchParams},
+          order: ['fname ASC'],
+          include: ['reviews'],
+        };
+
+        return this.actorRepository.find(objFilter);
+      },
+      [],
+      responseMessage.searchedMovies,
+    );
+    return res;
+  }
 }

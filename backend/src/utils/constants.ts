@@ -1,6 +1,6 @@
 export const responseMessage = {
   fetchedMovies: 'Fetched all movies successfully.',
-  searchedMovies: 'Fetched all searched movies successfully.',
+  searchedMovies: 'Searched movies successfully.',
   fetchedMovie: 'Fetch movie successfully.',
   addedMovie: 'Added movie successfully.',
   updatedMovie: 'Updated movie successfully.',
@@ -13,6 +13,7 @@ export const responseMessage = {
   fetchedUser: 'Fetch user successfully.',
   updatedUser: 'Updated user successfully.',
   deletedUser: 'Deleted user successfully.',
+  searchedUsers: 'Searched users successfully.',
   addedActor: 'Added actor successfully.',
   fetchedActors: 'Fetched all actors successfully.',
   fetchedActor: 'Fetch actor successfully.',

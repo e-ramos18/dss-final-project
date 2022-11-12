@@ -124,7 +124,7 @@ export class MovieController {
         });
         let sum = 0;
         let averageRating = 0;
-        if (movie.reviews && movie.reviews.length) {
+        if (movie.reviews?.length) {
           sum = movie.reviews.reduce(
             (partialSum, review) => partialSum + review.rating,
             0,
@@ -188,7 +188,6 @@ export class MovieController {
       async () => {
         const toDeleteMovie = await this.movieRepository.findById(id);
         const thisYear = new Date().getFullYear();
-
         if (thisYear - parseInt(toDeleteMovie.year) < 1)
           throw new Error('Movies less than a year cannot be deleted.');
         await this.movieRepository.deleteById(id);

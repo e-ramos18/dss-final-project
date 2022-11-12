@@ -201,7 +201,7 @@ export class UserController {
     options: {required: [Roles.RootAdmin, Roles.Admin]},
   })
   @del('/users/{id}')
-  @response(204, userResponseSchema)
+  @response(204, userResponseSchema.deleteUser)
   async deleteById(
     @param.path.string('id') id: string,
   ): Promise<CustomResponse<{}>> {
@@ -212,6 +212,30 @@ export class UserController {
       },
       null,
       responseMessage.deletedUser,
+    );
+    return res;
+  }
+
+  @get('/users/{key}/search')
+  @response(200, userResponseSchema.fetchUsers)
+  async searchByName(
+    @param.path.string('key') key: string,
+  ): Promise<CustomResponse<{}>> {
+    const res = tryCatch(
+      async () => {
+        const searchParams = [
+          {name: {like: key || '', options: 'i'}},
+          {email: {like: key || '', options: 'i'}},
+        ];
+        const objFilter = {
+          where: {or: searchParams},
+          order: ['name ASC'],
+        };
+
+        return this.userRepository.find(objFilter);
+      },
+      [],
+      responseMessage.searchedUsers,
     );
     return res;
   }

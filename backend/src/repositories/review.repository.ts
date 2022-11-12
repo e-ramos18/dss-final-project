@@ -21,10 +21,12 @@ export class ReviewRepository extends DefaultCrudRepository<
   constructor(
     @inject('datasources.database') dataSource: DatabaseDataSource,
     @repository.getter('MovieRepository')
-    protected movieRepositoryGetter: Getter<MovieRepository>, @repository.getter('UserRepository') protected userRepositoryGetter: Getter<UserRepository>,
+    protected movieRepositoryGetter: Getter<MovieRepository>,
+    @repository.getter('UserRepository')
+    protected userRepositoryGetter: Getter<UserRepository>,
   ) {
     super(Review, dataSource);
-    this.user = this.createBelongsToAccessorFor('user', userRepositoryGetter,);
+    this.user = this.createBelongsToAccessorFor('user', userRepositoryGetter);
     this.registerInclusionResolver('user', this.user.inclusionResolver);
     this.movie = this.createBelongsToAccessorFor(
       'movie',

@@ -49,7 +49,6 @@ export class AuthorizeInterceptor implements Provider<Interceptor> {
     _invocationCtx: InvocationContext,
     next: () => ValueOrPromise<InvocationResult>,
   ) {
-    // eslint-disable-next-line no-useless-catch
     try {
       // if you not provide options in your @authenticate decorator
       if (!this.metadata) return next();

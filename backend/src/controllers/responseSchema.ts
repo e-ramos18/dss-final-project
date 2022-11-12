@@ -245,7 +245,7 @@ export const userResponseSchema = {
       },
     },
   },
-  deleteMovie: {
+  deleteUser: {
     description: 'User DELETE success, returns deleted user id',
     content: {
       'application/json': {
