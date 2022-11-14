@@ -148,13 +148,12 @@ export class ActorController {
         const objFilter = {
           where: {or: searchParams},
           order: ['fname ASC'],
-          include: ['reviews'],
         };
 
         return this.actorRepository.find(objFilter);
       },
       [],
-      responseMessage.searchedMovies,
+      responseMessage.searchedActors,
     );
     return res;
   }

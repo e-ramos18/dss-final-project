@@ -16,6 +16,7 @@ export const responseMessage = {
   searchedUsers: 'Searched users successfully.',
   addedActor: 'Added actor successfully.',
   fetchedActors: 'Fetched all actors successfully.',
+  searchedActors: 'Searched actors successfully.',
   fetchedActor: 'Fetch actor successfully.',
   updatedActor: 'Updated actor successfully.',
   deletedActor: 'Deleted actor successfully.',

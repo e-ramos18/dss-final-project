@@ -82,7 +82,7 @@ describe('ActorController (unit)', () => {
       const res = await controller.searchByName('John');
       expect(res.success).equal(true);
       expect(res.data).to.have.length(1);
-      expect(res.message).equal(responseMessage.searchedMovies);
+      expect(res.message).equal(responseMessage.searchedActors);
       sinon.assert.called(searchByName);
     });
   });
