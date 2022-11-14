@@ -1,49 +1,33 @@
 import { useContext, useState } from "react";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
-import { validatEmail } from "../utils";
+import { isNotEmpty, validatEmail, validatePassword } from "../utils";
 import { login } from "../misc/auth";
 import { useNavigate } from "react-router-dom";
 import { ErrorContext, ErrorContextType } from "../context/ErrorProvider";
 
 const LoginForm = () => {
-  const { setErrorMessage } = useContext(ErrorContext) as ErrorContextType;
+  const context = useContext(ErrorContext) as ErrorContextType;
   const navigate = useNavigate();
-  const [email, setEmail] = useState("");
-  const [emailInvalid, setEmailInvalid] = useState("");
-  const [password, setPassword] = useState("");
-  const [passwordInvalid, setPasswordInvalid] = useState("");
-
-  const errors = {
-    name: "Please add a name.",
-    email: "Please enter a valid email.",
-    password: "Please add a password.",
-  };
-
-  const validateForm = (): string => {
-    if (validatEmail(email)) {
-      setEmailInvalid(errors.email);
-      return errors.email;
-    } else {
-      setEmailInvalid("");
-    }
-    if (!password) {
-      setPasswordInvalid(errors.password);
-      return errors.password;
-    } else {
-      setPasswordInvalid("");
-    }
-
-    return "";
-  };
+  const [credentials, setCredentials] = useState({
+    email: "",
+    password: "",
+  });
 
   const handleRegister = async () => {
-    if (validateForm()) return;
-    const err: string = await login(email, password);
-    if (!err) {
+    try {
+      isNotEmpty(credentials.email, "email");
+      if (validatEmail(credentials.email))
+        throw new Error("Please add a valid email.");
+      validatePassword(credentials.password, "password");
+      const err: string = await login(credentials.email, credentials.password);
+      if (err) throw new Error(err);
       navigate("/");
+    } catch (error: any) {
+      if (context !== null) {
+        context.setErrorMessage(error.message);
+      }
     }
-    setErrorMessage(err);
   };
 
   return (
@@ -52,20 +36,20 @@ const LoginForm = () => {
       <div className="ma-sm">
         <TextField
           label="Email"
-          helperText={emailInvalid}
-          error={emailInvalid !== ""}
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          value={credentials.email}
+          onChange={(e) =>
+            setCredentials({ ...credentials, email: e.target.value })
+          }
         />
       </div>
       <div className="ma-sm">
         <TextField
           label="Password"
+          value={credentials.password}
           type="password"
-          helperText={passwordInvalid}
-          error={passwordInvalid !== ""}
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          onChange={(e) =>
+            setCredentials({ ...credentials, password: e.target.value })
+          }
         />
       </div>
       <Button variant="contained" onClick={handleRegister}>

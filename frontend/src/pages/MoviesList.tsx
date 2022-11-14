@@ -1,100 +1,68 @@
-import {
-  Autocomplete,
-  Backdrop,
-  CircularProgress,
-  IconButton,
-  InputAdornment,
-  TextField,
-  Tooltip,
-  Typography,
-} from "@mui/material";
+import { Backdrop, CircularProgress, Typography } from "@mui/material";
 import { useContext, useEffect, useState } from "react";
 import Movie from "../components/Movie";
-import { fetchMovies } from "../misc/movie";
+import { fetchMovies, searchMovies } from "../misc/movie";
 import { useAppDispatch, useAppSelector } from "../redux/hooks";
-import SearchIcon from "@mui/icons-material/Search";
-import RestartAltIcon from "@mui/icons-material/RestartAlt";
-import { IMovie } from "../types";
 import { ErrorContext, ErrorContextType } from "../context/ErrorProvider";
+import { throwError } from "../utils";
+import SearchInput from "../components/SearchInput";
+import { setFilteredMovies } from "../features/movie/movieSlice";
 
 const MoviesList = () => {
   const movies = useAppSelector((state) => state.movie.movies);
-  const loading = useAppSelector((state) => state.movie.loading);
+  const { loading, filteredMovies } = useAppSelector((state) => state.movie);
   const { setErrorMessage } = useContext(ErrorContext) as ErrorContextType;
   const dispatch = useAppDispatch();
-  const [filteredMovies, setFilteredMovies] = useState<IMovie[] | null>(null);
+  const [searchValue, setSearchValue] = useState("");
 
   useEffect(() => {
     onMount();
-  }, [movies.length]);
+  }, []);
   const onMount = async () => {
-    const res = await dispatch(fetchMovies());
-    if (res.type === "movie/fetchMovies/rejected") {
-      //@ts-ignore
-      setErrorMessage(res.error.message);
+    try {
+      const res = await dispatch(fetchMovies());
+      throwError(res.payload);
+    } catch (error: any) {
+      setErrorMessage(error.message);
     }
-    setFilteredMovies(movies);
   };
 
-  const handleSearchChange = (_event: object, value: string) => {
-    const filtered = movies.filter(
-      (movie) =>
-        movie.title.includes(value) ||
-        movie.description.includes(value) ||
-        movie.cost.includes(value) ||
-        movie.year.includes(value)
-    );
-    setFilteredMovies(filtered);
+  const onSearch = async () => {
+    try {
+      const res = await dispatch(searchMovies(searchValue));
+      throwError(res.payload);
+    } catch (error: any) {
+      setErrorMessage(error.message);
+    }
+  };
+
+  const handleSearchChange = (key: string) => {
+    setSearchValue(key);
   };
 
   const resetTable = () => {
-    setFilteredMovies(movies);
+    dispatch(setFilteredMovies(movies));
   };
 
   return (
     <>
       <Typography variant="h6">Movies</Typography>
       <div className="ma-sm">
-        <Autocomplete
-          freeSolo
-          disableClearable
-          options={movies.map((option) => option.title)}
+        <SearchInput
+          value={searchValue}
           onChange={handleSearchChange}
-          renderInput={(params) => (
-            <TextField
-              {...params}
-              placeholder="Search Movie"
-              InputProps={{
-                ...params.InputProps,
-                type: "search",
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <SearchIcon />
-                  </InputAdornment>
-                ),
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <Tooltip title="Reset">
-                      <IconButton onClick={() => resetTable()}>
-                        <RestartAltIcon />
-                      </IconButton>
-                    </Tooltip>
-                  </InputAdornment>
-                ),
-              }}
-              size="small"
-            />
-          )}
+          onSearch={onSearch}
+          reset={resetTable}
         />
       </div>
-
-      {filteredMovies && filteredMovies.length > 0 ? (
+      {filteredMovies?.length > 0 && (
         <div className="moviesList">
           {filteredMovies.map((movie) => (
             <Movie movie={movie} key={movie.id} />
           ))}
         </div>
-      ) : (
+      )}
+      {!loading && filteredMovies.length <= 0 && (
         <h2 className="center">No Movies.</h2>
       )}
       <Backdrop open={loading}>

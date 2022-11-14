@@ -21,11 +21,11 @@ import LocalMoviesIcon from "@mui/icons-material/LocalMovies";
 import RecentActorsIcon from "@mui/icons-material/RecentActors";
 import StarRateIcon from "@mui/icons-material/StarRate";
 import LogoutIcon from "@mui/icons-material/Logout";
-import { useNavigate, Outlet, useLocation } from "react-router-dom";
+import { useNavigate, Outlet, useLocation, Navigate } from "react-router-dom";
 import { ErrorContext, ErrorContextType } from "../context/ErrorProvider";
 import { APIResponse, IUser, Roles } from "../types";
 import { getCurrentUser } from "../misc/auth";
-import { setItem } from "../utils";
+import { getItem, setItem } from "../utils";
 import CameraIndoorIcon from "@mui/icons-material/CameraIndoor";
 
 const drawerWidth = 240;
@@ -114,119 +114,122 @@ const Dashboard = () => {
   };
 
   return (
-    <Box sx={{ display: "flex" }}>
-      <CssBaseline />
-      <AppBar position="fixed" open={open}>
-        <Toolbar>
-          <IconButton
-            color="inherit"
-            aria-label="open drawer"
-            onClick={handleDrawerOpen}
-            edge="start"
-            sx={{ mr: 2, ...(open && { display: "none" }) }}
-          >
-            <MenuIcon />
-          </IconButton>
-          <Typography variant="h6" noWrap component="div">
-            Admin Dashboard
-          </Typography>
-          <Box sx={{ flexGrow: 1, padding: 1 }} />
-          <Typography variant="caption" noWrap>
-            {currentUser?.email}
-          </Typography>
-        </Toolbar>
-      </AppBar>
-      <Drawer
-        sx={{
-          width: drawerWidth,
-          flexShrink: 0,
-          "& .MuiDrawer-paper": {
+    <>
+      {!getItem("token") && <Navigate to="/" />}
+      <Box sx={{ display: "flex" }}>
+        <CssBaseline />
+        <AppBar position="fixed" open={open}>
+          <Toolbar>
+            <IconButton
+              color="inherit"
+              aria-label="open drawer"
+              onClick={handleDrawerOpen}
+              edge="start"
+              sx={{ mr: 2, ...(open && { display: "none" }) }}
+            >
+              <MenuIcon />
+            </IconButton>
+            <Typography variant="h6" noWrap component="div">
+              Admin Dashboard
+            </Typography>
+            <Box sx={{ flexGrow: 1, padding: 1 }} />
+            <Typography variant="caption" noWrap>
+              {currentUser?.email}
+            </Typography>
+          </Toolbar>
+        </AppBar>
+        <Drawer
+          sx={{
             width: drawerWidth,
-            boxSizing: "border-box",
-          },
-        }}
-        variant="persistent"
-        anchor="left"
-        open={open}
-      >
-        <DrawerHeader>
-          <IconButton onClick={handleDrawerClose}>
-            {theme.direction === "ltr" ? (
-              <ChevronLeftIcon />
-            ) : (
-              <ChevronRightIcon />
-            )}
-          </IconButton>
-        </DrawerHeader>
-        <Divider />
-        <List>
-          <ListItem disablePadding>
-            <ListItemButton
-              selected={location.pathname === "/dashboard"}
-              onClick={() => navigate("/dashboard")}
-            >
-              <ListItemIcon>
-                <AccountCircleIcon />
-              </ListItemIcon>
-              <ListItemText primary="Users" />
-            </ListItemButton>
-          </ListItem>
-          <ListItem disablePadding>
-            <ListItemButton
-              selected={location.pathname === "/dashboard/adminMovies"}
-              onClick={() => navigate("/dashboard/adminMovies")}
-            >
-              <ListItemIcon>
-                <LocalMoviesIcon />
-              </ListItemIcon>
-              <ListItemText primary="Movies" />
-            </ListItemButton>
-          </ListItem>
-          <ListItem disablePadding>
-            <ListItemButton
-              selected={location.pathname === "/dashboard/adminActors"}
-              onClick={() => navigate("/dashboard/adminActors")}
-            >
-              <ListItemIcon>
-                <RecentActorsIcon />
-              </ListItemIcon>
-              <ListItemText primary="Actors" />
-            </ListItemButton>
-          </ListItem>
-          <ListItem disablePadding>
-            <ListItemButton
-              selected={location.pathname === "/dashboard/adminReviews"}
-              onClick={() => navigate("/dashboard/adminReviews")}
-            >
-              <ListItemIcon>
-                <StarRateIcon />
-              </ListItemIcon>
-              <ListItemText primary="Reviews" />
-            </ListItemButton>
-          </ListItem>
-          <ListItem disablePadding>
-            <ListItemButton onClick={() => navigate("/")}>
-              <ListItemIcon>
-                <CameraIndoorIcon />
-              </ListItemIcon>
-              <ListItemText primary="Go to Homepage" />
-            </ListItemButton>
-          </ListItem>
-          <ListItem disablePadding>
-            <ListItemButton onClick={handleLogout}>
-              <ListItemIcon>
-                <LogoutIcon />
-              </ListItemIcon>
-              <ListItemText primary="Logout" />
-            </ListItemButton>
-          </ListItem>
-        </List>
-      </Drawer>
-      <Main open={open}>
-        <DrawerHeader />
-        <Outlet />
-      </Main>
-    </Box>
+            flexShrink: 0,
+            "& .MuiDrawer-paper": {
+              width: drawerWidth,
+              boxSizing: "border-box",
+            },
+          }}
+          variant="persistent"
+          anchor="left"
+          open={open}
+        >
+          <DrawerHeader>
+            <IconButton onClick={handleDrawerClose}>
+              {theme.direction === "ltr" ? (
+                <ChevronLeftIcon />
+              ) : (
+                <ChevronRightIcon />
+              )}
+            </IconButton>
+          </DrawerHeader>
+          <Divider />
+          <List>
+            <ListItem disablePadding>
+              <ListItemButton
+                selected={location.pathname === "/dashboard"}
+                onClick={() => navigate("/dashboard")}
+              >
+                <ListItemIcon>
+                  <AccountCircleIcon />
+                </ListItemIcon>
+                <ListItemText primary="Users" />
+              </ListItemButton>
+            </ListItem>
+            <ListItem disablePadding>
+              <ListItemButton
+                selected={location.pathname === "/dashboard/adminMovies"}
+                onClick={() => navigate("/dashboard/adminMovies")}
+              >
+                <ListItemIcon>
+                  <LocalMoviesIcon />
+                </ListItemIcon>
+                <ListItemText primary="Movies" />
+              </ListItemButton>
+            </ListItem>
+            <ListItem disablePadding>
+              <ListItemButton
+                selected={location.pathname === "/dashboard/adminActors"}
+                onClick={() => navigate("/dashboard/adminActors")}
+              >
+                <ListItemIcon>
+                  <RecentActorsIcon />
+                </ListItemIcon>
+                <ListItemText primary="Actors" />
+              </ListItemButton>
+            </ListItem>
+            <ListItem disablePadding>
+              <ListItemButton
+                selected={location.pathname === "/dashboard/adminReviews"}
+                onClick={() => navigate("/dashboard/adminReviews")}
+              >
+                <ListItemIcon>
+                  <StarRateIcon />
+                </ListItemIcon>
+                <ListItemText primary="Reviews" />
+              </ListItemButton>
+            </ListItem>
+            <ListItem disablePadding>
+              <ListItemButton onClick={() => navigate("/")}>
+                <ListItemIcon>
+                  <CameraIndoorIcon />
+                </ListItemIcon>
+                <ListItemText primary="Go to Homepage" />
+              </ListItemButton>
+            </ListItem>
+            <ListItem disablePadding>
+              <ListItemButton onClick={handleLogout}>
+                <ListItemIcon>
+                  <LogoutIcon />
+                </ListItemIcon>
+                <ListItemText primary="Logout" />
+              </ListItemButton>
+            </ListItem>
+          </List>
+        </Drawer>
+        <Main open={open}>
+          <DrawerHeader />
+          <Outlet />
+        </Main>
+      </Box>
+    </>
   );
 };
 

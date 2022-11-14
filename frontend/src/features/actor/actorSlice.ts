@@ -5,22 +5,21 @@ import {
   editActor,
   fetchActor,
   fetchActors,
+  searchActors,
 } from "../../misc/actor";
-import { IActor } from "../../types";
+import { CustomApiResponse, IActor } from "../../types";
 
 type InitialState = {
   actors: IActor[];
   filteredActors: IActor[];
   actor: IActor | null;
   loading: boolean;
-  error: string;
 };
 const initialState: InitialState = {
   actors: [],
   filteredActors: [],
   actor: null,
   loading: false,
-  error: "",
 };
 
 const actorSlice = createSlice({
@@ -38,18 +37,32 @@ const actorSlice = createSlice({
     });
     builder.addCase(
       fetchActors.fulfilled,
-      (state, action: PayloadAction<IActor[]>) => {
+      (state, action: PayloadAction<CustomApiResponse<{}>>) => {
         state.loading = false;
-        state.actors = action.payload;
-        state.filteredActors = action.payload;
-        state.error = "";
+        state.actors = action.payload.data as IActor[];
+        state.filteredActors = action.payload.data as IActor[];
       }
     );
     builder.addCase(fetchActors.rejected, (state, action) => {
       state.loading = false;
       state.actors = [];
       state.filteredActors = [];
-      state.error = action.error.message || "Something went wrong";
+    });
+
+    // Search actors
+    builder.addCase(searchActors.pending, (state) => {
+      state.loading = true;
+    });
+    builder.addCase(
+      searchActors.fulfilled,
+      (state, action: PayloadAction<CustomApiResponse<{}>>) => {
+        state.loading = false;
+        state.filteredActors = action.payload.data as IActor[];
+      }
+    );
+    builder.addCase(searchActors.rejected, (state, action) => {
+      state.loading = false;
+      state.actors = [];
     });
 
     // Fetch actor
@@ -58,16 +71,14 @@ const actorSlice = createSlice({
     });
     builder.addCase(
       fetchActor.fulfilled,
-      (state, action: PayloadAction<IActor>) => {
+      (state, action: PayloadAction<CustomApiResponse<{}>>) => {
         state.loading = false;
-        state.actor = action.payload;
-        state.error = "";
+        state.actor = action.payload.data as IActor;
       }
     );
     builder.addCase(fetchActor.rejected, (state, action) => {
       state.loading = false;
       state.actor = null;
-      state.error = action.error.message || "Something went wrong";
     });
 
     // Add a actor
@@ -76,16 +87,16 @@ const actorSlice = createSlice({
     });
     builder.addCase(
       addActor.fulfilled,
-      (state, action: PayloadAction<IActor>) => {
+      (state, action: PayloadAction<CustomApiResponse<{}>>) => {
         state.loading = false;
-        state.actors = state.actors.concat(action.payload);
-        state.filteredActors = state.actors.concat(action.payload);
-        state.error = "";
+        state.actors = state.actors.concat(action.payload.data as IActor);
+        state.filteredActors = state.filteredActors.concat(
+          action.payload.data as IActor
+        );
       }
     );
     builder.addCase(addActor.rejected, (state, action) => {
       state.loading = false;
-      state.error = action.error.message || "Something went wrong";
     });
 
     // Edit a actor
@@ -94,22 +105,19 @@ const actorSlice = createSlice({
     });
     builder.addCase(
       editActor.fulfilled,
-      (state, action: PayloadAction<IActor>) => {
+      (state, action: PayloadAction<CustomApiResponse<{}>>) => {
         state.loading = false;
         const newActors: IActor[] = [...state.actors];
+        const data = action.payload.data as IActor;
         //finding index of the movie
-        const index: number = newActors.findIndex(
-          (a) => a.id === action.payload.id
-        );
-        newActors[index] = action.payload;
+        const index: number = newActors.findIndex((a) => a.id === data.id);
+        newActors[index] = data;
         state.actors = newActors;
         state.filteredActors = newActors;
-        state.error = "";
       }
     );
     builder.addCase(editActor.rejected, (state, action) => {
       state.loading = false;
-      state.error = action.error.message || "Something went wrong";
     });
 
     // Delete a actor
@@ -118,19 +126,18 @@ const actorSlice = createSlice({
     });
     builder.addCase(
       deleteActor.fulfilled,
-      (state, action: PayloadAction<string>) => {
+      (state, action: PayloadAction<CustomApiResponse<{}>>) => {
+        const data = action.payload.data as string;
         const newUsers = state.actors.filter(
-          (actor: IActor) => actor.id !== action.payload
+          (actor: IActor) => actor.id !== data
         );
         state.loading = false;
         state.actors = newUsers;
         state.filteredActors = newUsers;
-        state.error = "";
       }
     );
-    builder.addCase(deleteActor.rejected, (state, action) => {
+    builder.addCase(deleteActor.rejected, (state) => {
       state.loading = false;
-      state.error = action.error.message || "Something went wrong";
     });
   },
 });

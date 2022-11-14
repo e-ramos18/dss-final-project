@@ -7,9 +7,9 @@ import TableRow from "@mui/material/TableRow";
 import HowToRegIcon from "@mui/icons-material/HowToReg";
 import Paper from "@mui/material/Paper";
 import { useContext, useEffect, useState } from "react";
-import { useAppDispatch, useAppSelector } from "../redux/hooks";
-import { IReview } from "../types";
-import { ErrorContext, ErrorContextType } from "../context/ErrorProvider";
+import { useAppDispatch, useAppSelector } from "../../redux/hooks";
+import { IReview } from "../../types";
+import { ErrorContext, ErrorContextType } from "../../context/ErrorProvider";
 import {
   Autocomplete,
   Backdrop,
@@ -24,16 +24,17 @@ import {
   Tooltip,
   Typography,
 } from "@mui/material";
-import { editReview, fetchReviews } from "../misc/review";
+import { editReview, fetchReviews } from "../../misc/review";
 import TablePaginationActions from "./TablePaginationActions";
 import SearchIcon from "@mui/icons-material/Search";
 import RestartAltIcon from "@mui/icons-material/RestartAlt";
-import { setFilteredReviews } from "../features/review/reviewSlice";
+import { setFilteredReviews } from "../../features/review/reviewSlice";
+import { throwError } from "../../utils";
 
 const ReviewsTable = () => {
   const { setErrorMessage } = useContext(ErrorContext) as ErrorContextType;
   const dispatch = useAppDispatch();
-  const reviews = useAppSelector((state) => state.review.reviews);
+  const { reviews } = useAppSelector((state) => state.review);
   const filteredReviews = useAppSelector(
     (state) => state.review.filteredReviews
   );
@@ -45,10 +46,11 @@ const ReviewsTable = () => {
     onMount();
   }, [reviews.length]);
   const onMount = async () => {
-    const res = await dispatch(fetchReviews());
-    if (res.type === "review/fetchReviews/rejected") {
-      //@ts-ignore
-      setErrorMessage(res.error.message);
+    try {
+      const res = await dispatch(fetchReviews());
+      throwError(res.payload);
+    } catch (error: any) {
+      setErrorMessage(error.message);
     }
   };
 
@@ -83,10 +85,11 @@ const ReviewsTable = () => {
   const approveReview = async (review: IReview, isApprove: boolean) => {
     const updatedReview = { ...review };
     updatedReview.isApproved = isApprove;
-    const res = await dispatch(editReview(updatedReview));
-    if (res.type === "review/editReview/rejected") {
-      //@ts-ignore
-      setErrorMessage(res.error.message);
+    try {
+      const res = await dispatch(editReview(updatedReview));
+      throwError(res.payload);
+    } catch (error: any) {
+      setErrorMessage(error.message);
     }
   };
 

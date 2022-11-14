@@ -1,4 +1,4 @@
-import MoviesTable from "../components/MoviesTable";
+import MoviesTable from "../components/Tables/MoviesTable";
 
 const Movies = () => {
   return <MoviesTable />;

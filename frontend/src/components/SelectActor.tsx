@@ -5,7 +5,7 @@ import { IActor } from "../types";
 type IProps = {
   options: IActor[];
   handleChange: (event: object, value: IActor[]) => void;
-  helperText: string;
+  helperText?: string;
   defaultValue?: IActor[];
   disabled?: boolean;
 };
@@ -13,7 +13,6 @@ type IProps = {
 const SelectActor = ({
   options,
   handleChange,
-  helperText,
   defaultValue = [],
   disabled = false,
 }: IProps) => {
@@ -33,8 +32,6 @@ const SelectActor = ({
           {...params}
           label="Select Actor"
           placeholder="Select Actor"
-          helperText={helperText}
-          error={helperText !== ""}
         />
       )}
     />

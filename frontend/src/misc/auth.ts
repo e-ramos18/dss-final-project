@@ -33,7 +33,10 @@ export const login = async (
       email,
       password,
     });
-    setItem("token", res.data.token);
+    if (!res.data.success) {
+      return res.data.message;
+    }
+    setItem("token", res.data.data);
     return "";
   } catch (error) {
     // @ts-ignore
@@ -44,6 +47,11 @@ export const login = async (
 export const getCurrentUser = async (): Promise<APIResponse> => {
   try {
     const token = getItem("token");
+    if (!token)
+      return {
+        data: null,
+        error: "Unauthorized",
+      };
     const res = await api.get("/users/me", {
       headers: {
         "Content-Type": "application/json",
@@ -51,7 +59,7 @@ export const getCurrentUser = async (): Promise<APIResponse> => {
       },
     });
     return {
-      data: res.data,
+      data: res.data.data,
       error: "",
     };
   } catch (error) {

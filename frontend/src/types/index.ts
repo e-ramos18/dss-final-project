@@ -21,9 +21,9 @@ export interface IMovie {
   cost: string;
   imageUrl: string;
   year: string;
-  actors?: string[];
+  actors?: Partial<IActor[]>;
   actorsIds?: string[];
-  reviews?: IReview[];
+  reviews?: Partial<IReview[]>;
   createdAt?: string;
 }
 
@@ -54,3 +54,9 @@ export interface APIResponse {
   data: null | IUser;
   error: string;
 }
+
+export type CustomApiResponse<T> = {
+  success: boolean;
+  data: T | T[] | null;
+  message: string;
+};

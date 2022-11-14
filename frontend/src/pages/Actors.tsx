@@ -1,4 +1,4 @@
-import ActorsTable from "../components/ActorsTable";
+import ActorsTable from "../components/Tables/ActorsTable";
 
 const Actors = () => {
   return <ActorsTable />;

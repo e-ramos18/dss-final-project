@@ -9,7 +9,7 @@ import {
 } from "@mui/material";
 import { useContext, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import AddReviewModal from "../components/AddReviewModal";
+import AddReviewModal from "../components/Modals/AddReviewModal";
 import MovieReview from "../components/MovieReview";
 import { ErrorContext, ErrorContextType } from "../context/ErrorProvider";
 import { fetchActors } from "../misc/actor";
@@ -17,7 +17,7 @@ import { getCurrentUser } from "../misc/auth";
 import { fetchMovie } from "../misc/movie";
 import { useAppDispatch, useAppSelector } from "../redux/hooks";
 import { APIResponse, IUser, Roles } from "../types";
-import { getItem } from "../utils";
+import { getItem, throwError } from "../utils";
 
 type IParams = {
   id: string;
@@ -40,26 +40,24 @@ const MovieDetails = () => {
   }, [id]);
   const onMount = async () => {
     if (!id) return;
-    const res = await dispatch(fetchMovie(id));
-    if (res.type === "movie/fetchMovie/rejected") {
-      //@ts-ignore
-      setErrorMessage(res.error.message);
+    try {
+      const res = await dispatch(fetchMovie(id));
+      throwError(res.payload);
+      const response = await dispatch(fetchActors());
+      throwError(response.payload);
+      if (!getItem("token")) return;
+      const resp: APIResponse = await getCurrentUser();
+      if (!resp.data && resp.error) {
+        return setErrorMessage(resp.error);
+      }
+      setCurrentUser(resp.data);
+    } catch (err: any) {
+      setErrorMessage(err.message);
     }
-    const response = await dispatch(fetchActors());
-    if (response.type === "actor/fetchActors/rejected") {
-      //@ts-ignore
-      setErrorMessage(res.error.message);
-    }
-    if (!getItem("token")) return;
-    const resp: APIResponse = await getCurrentUser();
-    if (!resp.data && resp.error) {
-      return setErrorMessage(resp.error);
-    }
-    setCurrentUser(resp.data);
   };
 
   const handleClose = (
-    event?: React.SyntheticEvent | Event,
+    _event?: React.SyntheticEvent | Event,
     reason?: string
   ) => {
     if (reason === "clickaway") {
@@ -117,16 +115,20 @@ const MovieDetails = () => {
               {!movie.reviews && <p>No reviews yet.</p>}
               <br />
               <br />
-              <Button variant="contained" onClick={handleAddReview}>
-                Add Review
-              </Button>
+              {!currentUser || currentUser?.role === Roles.User ? (
+                <Button variant="contained" onClick={handleAddReview}>
+                  Add Review
+                </Button>
+              ) : (
+                ""
+              )}
             </div>
           </Paper>
           {movie.reviews && (
             <>
               <h3>Reviews</h3>
               {movie.reviews.map((review) => {
-                if (review.isApproved) {
+                if (review && review.isApproved) {
                   return <MovieReview review={review} key={review.id} />;
                 }
               })}

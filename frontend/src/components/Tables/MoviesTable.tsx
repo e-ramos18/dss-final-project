@@ -6,39 +6,28 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
 import { useContext, useEffect, useState } from "react";
-import { useAppDispatch, useAppSelector } from "../redux/hooks";
-import { deleteMovie, fetchMovies } from "../misc/movie";
-import { IMovie } from "../types";
-import { ErrorContext, ErrorContextType } from "../context/ErrorProvider";
-import {
-  Autocomplete,
-  Backdrop,
-  Button,
-  CircularProgress,
-  IconButton,
-  InputAdornment,
-  TextField,
-  Tooltip,
-  Typography,
-} from "@mui/material";
-import AddMovieModal from "./AddMovieModal";
-import DeleteModal from "./DeleteModal";
-import EditMovieModal from "./EditMovieModal";
+import { useAppDispatch, useAppSelector } from "../../redux/hooks";
+import { deleteMovie, fetchMovies, searchMovies } from "../../misc/movie";
+import { IMovie } from "../../types";
+import { ErrorContext, ErrorContextType } from "../../context/ErrorProvider";
+import { Backdrop, Button, CircularProgress, Typography } from "@mui/material";
+import MovieModal from "../Modals/MovieModal";
+import DeleteModal from "../Modals/DeleteModal";
 import * as React from "react";
 import TableFooter from "@mui/material/TableFooter";
 import TablePagination from "@mui/material/TablePagination";
 import TablePaginationActions from "./TablePaginationActions";
-import SearchIcon from "@mui/icons-material/Search";
-import RestartAltIcon from "@mui/icons-material/RestartAlt";
-import AddActorModal from "./AddActorModal";
-import { setFilteredMovies } from "../features/movie/movieSlice";
+import AddActorModal from "../Modals/ActorModal";
+import { setFilteredMovies } from "../../features/movie/movieSlice";
+import SearchInput from "../SearchInput";
+import { throwError } from "../../utils";
 
 const MoviesTable = () => {
   const { setErrorMessage } = useContext(ErrorContext) as ErrorContextType;
   const dispatch = useAppDispatch();
-  const movies = useAppSelector((state) => state.movie.movies);
-  const filteredMovies = useAppSelector((state) => state.movie.filteredMovies);
-  const loading = useAppSelector((state) => state.movie.loading);
+  const { movies, filteredMovies, loading } = useAppSelector(
+    (state) => state.movie
+  );
   const [openAdd, setOpenAdd] = useState(false);
   const [openAddActor, setOpenAddActor] = useState(false);
   const [openDelete, setOpenDelete] = useState(false);
@@ -46,32 +35,23 @@ const MoviesTable = () => {
   const [idToDelete, setIdToDelete] = useState("");
   const [movieToEdit, setMovieToEdit] = useState<IMovie | null>(null);
   const [page, setPage] = React.useState(0);
-  const [rowsPerPage, setRowsPerPage] = React.useState(5);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [searchValue, setSearchValue] = useState("");
 
   useEffect(() => {
     onMount();
-  }, [movies.length]);
+  }, []);
   const onMount = async () => {
-    const res = await dispatch(fetchMovies());
-    if (res.type === "movie/fetchMovies/rejected") {
-      //@ts-ignore
-      setErrorMessage(res.error.message);
+    try {
+      const res = await dispatch(fetchMovies());
+      throwError(res.payload);
+    } catch (error: any) {
+      setErrorMessage(error.message);
     }
   };
 
-  const handleSearchChange = (_event: object, value: string) => {
-    const filtered = movies.filter(
-      (movie) =>
-        movie.title.includes(value) ||
-        movie.description.includes(value) ||
-        movie.cost.includes(value) ||
-        movie.year.includes(value)
-    );
-    dispatch(setFilteredMovies(filtered));
-  };
-
   const handleChangePage = (
-    event: React.MouseEvent<HTMLButtonElement> | null,
+    _event: React.MouseEvent<HTMLButtonElement> | null,
     newPage: number
   ) => {
     setPage(newPage);
@@ -113,16 +93,17 @@ const MoviesTable = () => {
   };
 
   const handleDelete = async (id: string) => {
-    const res = await dispatch(deleteMovie(id));
-    if (res.type === "movie/deleteMovie/rejected") {
-      //@ts-ignore
-      return setErrorMessage(res.error.message);
+    try {
+      const res = await dispatch(deleteMovie(id));
+      throwError(res.payload);
+      setOpenDelete(false);
+    } catch (error: any) {
+      setErrorMessage(error.message);
     }
-    setOpenDelete(false);
   };
 
   const renderTableBody = () => {
-    if (filteredMovies && filteredMovies.length > 0) {
+    if (filteredMovies?.length > 0) {
       if (rowsPerPage > 0) {
         return filteredMovies
           .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
@@ -179,40 +160,28 @@ const MoviesTable = () => {
     }
   };
 
+  const handleSearchChange = (key: string) => {
+    setSearchValue(key);
+  };
+
+  const onSearch = async () => {
+    try {
+      const res = await dispatch(searchMovies(searchValue));
+      throwError(res.payload);
+    } catch (error: any) {
+      setErrorMessage(error.message);
+    }
+  };
+
   return (
     <>
       <Typography variant="h6">Movies Table</Typography>
       <div className="ma-sm">
-        <Autocomplete
-          freeSolo
-          disableClearable
-          options={movies.map((option) => option.title)}
+        <SearchInput
+          value={searchValue}
           onChange={handleSearchChange}
-          renderInput={(params) => (
-            <TextField
-              {...params}
-              placeholder="Search Movie"
-              InputProps={{
-                ...params.InputProps,
-                type: "search",
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <SearchIcon />
-                  </InputAdornment>
-                ),
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <Tooltip title="Reset">
-                      <IconButton onClick={() => resetTable()}>
-                        <RestartAltIcon />
-                      </IconButton>
-                    </Tooltip>
-                  </InputAdornment>
-                ),
-              }}
-              size="small"
-            />
-          )}
+          onSearch={onSearch}
+          reset={resetTable}
         />
       </div>
       <TableContainer component={Paper}>
@@ -253,7 +222,7 @@ const MoviesTable = () => {
           </TableFooter>
         </Table>
       </TableContainer>
-      <AddMovieModal
+      <MovieModal
         open={openAdd}
         handleClose={() => setOpenAdd(false)}
         setOpenAddActor={setOpenAddActor}
@@ -263,10 +232,12 @@ const MoviesTable = () => {
         handleClose={() => setOpenAddActor(false)}
       />
       {movieToEdit !== null && (
-        <EditMovieModal
+        <MovieModal
           open={openEdit}
           handleClose={handleCloseEdit}
-          movie={movieToEdit}
+          movieToEdit={movieToEdit}
+          setOpenAddActor={setOpenAddActor}
+          title="Edit Movie"
         />
       )}
       <DeleteModal

@@ -1,18 +1,16 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { addReview, editReview, fetchReviews } from "../../misc/review";
-import { IReview } from "../../types";
+import { CustomApiResponse, IReview } from "../../types";
 
 type InitialState = {
   reviews: IReview[];
   filteredReviews: IReview[];
   loading: boolean;
-  error: string;
 };
 const initialState: InitialState = {
   reviews: [],
   filteredReviews: [],
   loading: false,
-  error: "",
 };
 
 const reviewSlice = createSlice({
@@ -30,18 +28,16 @@ const reviewSlice = createSlice({
     });
     builder.addCase(
       fetchReviews.fulfilled,
-      (state, action: PayloadAction<IReview[]>) => {
+      (state, action: PayloadAction<CustomApiResponse<{}>>) => {
         state.loading = false;
-        state.reviews = action.payload;
-        state.filteredReviews = action.payload;
-        state.error = "";
+        state.reviews = action.payload.data as IReview[];
+        state.filteredReviews = action.payload.data as IReview[];
       }
     );
     builder.addCase(fetchReviews.rejected, (state, action) => {
       state.loading = false;
       state.reviews = [];
       state.filteredReviews = [];
-      state.error = action.error.message || "Something went wrong";
     });
 
     // Add a review
@@ -50,16 +46,16 @@ const reviewSlice = createSlice({
     });
     builder.addCase(
       addReview.fulfilled,
-      (state, action: PayloadAction<IReview>) => {
+      (state, action: PayloadAction<CustomApiResponse<{}>>) => {
         state.loading = false;
-        state.reviews = state.reviews.concat(action.payload);
-        state.filteredReviews = state.reviews.concat(action.payload);
-        state.error = "";
+        state.reviews = state.reviews.concat(action.payload.data as IReview);
+        state.filteredReviews = state.filteredReviews.concat(
+          action.payload.data as IReview
+        );
       }
     );
     builder.addCase(addReview.rejected, (state, action) => {
       state.loading = false;
-      state.error = action.error.message || "Something went wrong";
     });
 
     // Edit a review
@@ -68,22 +64,19 @@ const reviewSlice = createSlice({
     });
     builder.addCase(
       editReview.fulfilled,
-      (state, action: PayloadAction<IReview>) => {
+      (state, action: PayloadAction<CustomApiResponse<{}>>) => {
         state.loading = false;
         const newReviews: IReview[] = [...state.reviews];
+        const data = action.payload.data as IReview;
         //finding index of the review
-        const index: number = newReviews.findIndex(
-          (m) => m.id === action.payload.id
-        );
-        newReviews[index] = action.payload;
+        const index: number = newReviews.findIndex((m) => m.id === data.id);
+        newReviews[index] = data;
         state.reviews = newReviews;
         state.filteredReviews = newReviews;
-        state.error = "";
       }
     );
     builder.addCase(editReview.rejected, (state, action) => {
       state.loading = false;
-      state.error = action.error.message || "Something went wrong";
     });
   },
 });

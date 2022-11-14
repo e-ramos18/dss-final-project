@@ -9,6 +9,14 @@ export const fetchMovies = createAsyncThunk("movie/fetchMovies", async () => {
   return res.data;
 });
 
+export const searchMovies = createAsyncThunk(
+  "movie/searchMovies",
+  async (key: string) => {
+    const res = await api.get(`/movies/${key}/search`);
+    return res.data;
+  }
+);
+
 export const fetchMovie = createAsyncThunk(
   "movie/fetchMovie",
   async (id: string) => {
@@ -19,7 +27,7 @@ export const fetchMovie = createAsyncThunk(
 
 export const addMovie = createAsyncThunk(
   "movie/addMovie",
-  async (body: IMovie) => {
+  async (body: Partial<IMovie>) => {
     const token = getItem("token");
     const res = await api.post("/movies", body, {
       headers: {
@@ -33,9 +41,9 @@ export const addMovie = createAsyncThunk(
 
 export const editMovie = createAsyncThunk(
   "movie/editMovie",
-  async (body: IMovie) => {
+  async (body: Partial<IMovie>) => {
     const token = getItem("token");
-    const res = await api.put(`/movies/${body.id}`, body, {
+    const res = await api.patch(`/movies/${body.id}`, body, {
       headers: {
         "Content-Type": "application/json",
         Authorization: "Bearer " + token,

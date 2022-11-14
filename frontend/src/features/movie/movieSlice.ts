@@ -5,22 +5,23 @@ import {
   editMovie,
   fetchMovie,
   fetchMovies,
+  searchMovies,
 } from "../../misc/movie";
-import { IMovie } from "../../types";
+import { CustomApiResponse, IMovie } from "../../types";
 
 type InitialState = {
   movies: IMovie[];
   filteredMovies: IMovie[];
   movie: IMovie | null;
   loading: boolean;
-  error: string;
+  apiMessage: "";
 };
 const initialState: InitialState = {
   movies: [],
   filteredMovies: [],
   movie: null,
   loading: false,
-  error: "",
+  apiMessage: "",
 };
 
 const movieSlice = createSlice({
@@ -38,18 +39,32 @@ const movieSlice = createSlice({
     });
     builder.addCase(
       fetchMovies.fulfilled,
-      (state, action: PayloadAction<IMovie[]>) => {
+      (state, action: PayloadAction<CustomApiResponse<{}>>) => {
         state.loading = false;
-        state.movies = action.payload;
-        state.filteredMovies = action.payload;
-        state.error = "";
+        state.movies = action.payload.data as IMovie[];
+        state.filteredMovies = action.payload.data as IMovie[];
       }
     );
     builder.addCase(fetchMovies.rejected, (state, action) => {
       state.loading = false;
       state.movies = [];
       state.filteredMovies = [];
-      state.error = action.error.message || "Something went wrong";
+    });
+
+    // Search movies
+    builder.addCase(searchMovies.pending, (state) => {
+      state.loading = true;
+    });
+    builder.addCase(
+      searchMovies.fulfilled,
+      (state, action: PayloadAction<CustomApiResponse<{}>>) => {
+        state.loading = false;
+        state.filteredMovies = action.payload.data as IMovie[];
+      }
+    );
+    builder.addCase(searchMovies.rejected, (state, action) => {
+      state.loading = false;
+      state.movies = [];
     });
 
     // Fetch a movie
@@ -58,16 +73,15 @@ const movieSlice = createSlice({
     });
     builder.addCase(
       fetchMovie.fulfilled,
-      (state, action: PayloadAction<IMovie>) => {
+      (state, action: PayloadAction<CustomApiResponse<{}>>) => {
+        const { data } = action.payload;
         state.loading = false;
-        state.movie = action.payload;
-        state.error = "";
+        state.movie = data as IMovie;
       }
     );
     builder.addCase(fetchMovie.rejected, (state, action) => {
       state.loading = false;
       state.movie = null;
-      state.error = action.error.message || "Something went wrong";
     });
 
     // Add a movie
@@ -76,16 +90,16 @@ const movieSlice = createSlice({
     });
     builder.addCase(
       addMovie.fulfilled,
-      (state, action: PayloadAction<IMovie>) => {
+      (state, action: PayloadAction<CustomApiResponse<{}>>) => {
         state.loading = false;
-        state.movies = state.movies.concat(action.payload);
-        state.filteredMovies = state.movies.concat(action.payload);
-        state.error = "";
+        state.movies = state.movies.concat(action.payload.data as IMovie);
+        state.filteredMovies = state.filteredMovies.concat(
+          action.payload.data as IMovie
+        );
       }
     );
     builder.addCase(addMovie.rejected, (state, action) => {
       state.loading = false;
-      state.error = action.error.message || "Something went wrong";
     });
 
     // Edit a movie
@@ -94,22 +108,19 @@ const movieSlice = createSlice({
     });
     builder.addCase(
       editMovie.fulfilled,
-      (state, action: PayloadAction<IMovie>) => {
+      (state, action: PayloadAction<CustomApiResponse<{}>>) => {
         state.loading = false;
         const newMovies: IMovie[] = [...state.movies];
+        const data = action.payload.data as IMovie;
         //finding index of the movie
-        const index: number = newMovies.findIndex(
-          (m) => m.id === action.payload.id
-        );
-        newMovies[index] = action.payload;
+        const index: number = newMovies.findIndex((m) => m.id === data.id);
+        newMovies[index] = data;
         state.movies = newMovies;
         state.filteredMovies = newMovies;
-        state.error = "";
       }
     );
     builder.addCase(editMovie.rejected, (state, action) => {
       state.loading = false;
-      state.error = action.error.message || "Something went wrong";
     });
 
     // Delete a movie
@@ -118,18 +129,18 @@ const movieSlice = createSlice({
     });
     builder.addCase(
       deleteMovie.fulfilled,
-      (state, action: PayloadAction<string>) => {
+      (state, action: PayloadAction<CustomApiResponse<{}>>) => {
+        const data = action.payload.data as string;
         const newMovies = state.movies.filter(
-          (movie: IMovie) => movie.id !== action.payload
+          (movie: IMovie) => movie.id !== data
         );
         state.loading = false;
         state.movies = newMovies;
-        state.error = "";
+        state.filteredMovies = newMovies;
       }
     );
     builder.addCase(deleteMovie.rejected, (state, action) => {
       state.loading = false;
-      state.error = action.error.message || "Something went wrong";
     });
   },
 });

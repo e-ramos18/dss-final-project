@@ -6,35 +6,29 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
 import { useContext, useEffect, useState } from "react";
-import { useAppDispatch, useAppSelector } from "../redux/hooks";
-import { deleteActor, fetchActors } from "../misc/actor";
-import { IActor } from "../types";
-import { ErrorContext, ErrorContextType } from "../context/ErrorProvider";
+import { useAppDispatch, useAppSelector } from "../../redux/hooks";
+import { deleteActor, fetchActors, searchActors } from "../../misc/actor";
+import { IActor } from "../../types";
+import { ErrorContext, ErrorContextType } from "../../context/ErrorProvider";
 import {
-  Autocomplete,
   Backdrop,
   Button,
   CircularProgress,
-  IconButton,
-  InputAdornment,
   TableFooter,
   TablePagination,
-  TextField,
-  Tooltip,
   Typography,
 } from "@mui/material";
-import AddActorModal from "./AddActorModal";
-import DeleteModal from "./DeleteModal";
-import EditActorModal from "./EditActorModal";
+import ActorModal from "../Modals/ActorModal";
+import DeleteModal from "../Modals/DeleteModal";
 import TablePaginationActions from "./TablePaginationActions";
-import SearchIcon from "@mui/icons-material/Search";
-import RestartAltIcon from "@mui/icons-material/RestartAlt";
-import { setFilteredActors } from "../features/actor/actorSlice";
+import { setFilteredActors } from "../../features/actor/actorSlice";
+import { throwError } from "../../utils";
+import SearchInput from "../SearchInput";
 
 const ActorsTable = () => {
   const { setErrorMessage } = useContext(ErrorContext) as ErrorContextType;
   const dispatch = useAppDispatch();
-  const actors = useAppSelector((state) => state.actor.actors);
+  const { actors } = useAppSelector((state) => state.actor);
   const filteredActors = useAppSelector((state) => state.actor.filteredActors);
   const loading = useAppSelector((state) => state.actor.loading);
   const [openAdd, setOpenAdd] = useState(false);
@@ -44,20 +38,22 @@ const ActorsTable = () => {
   const [actorToEdit, setActorToEdit] = useState<IActor | null>(null);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [searchValue, setSearchValue] = useState("");
 
   useEffect(() => {
     onMount();
   }, [actors.length]);
   const onMount = async () => {
-    const res = await dispatch(fetchActors());
-    if (res.type === "actor/fetchActors/rejected") {
-      //@ts-ignore
-      setErrorMessage(res.error.message);
+    try {
+      const res = await dispatch(fetchActors());
+      throwError(res.payload);
+    } catch (error: any) {
+      setErrorMessage(error.message);
     }
   };
 
   const handleChangePage = (
-    event: React.MouseEvent<HTMLButtonElement> | null,
+    _event: React.MouseEvent<HTMLButtonElement> | null,
     newPage: number
   ) => {
     setPage(newPage);
@@ -70,14 +66,17 @@ const ActorsTable = () => {
     setPage(0);
   };
 
-  const handleSearchChange = (_event: object, value: string) => {
-    const filtered = actors.filter(
-      (actor) =>
-        actor.fname.includes(value) ||
-        actor.lname.includes(value) ||
-        actor.gender.includes(value)
-    );
-    dispatch(setFilteredActors(filtered));
+  const handleSearchChange = (key: string) => {
+    setSearchValue(key);
+  };
+
+  const onSearch = async () => {
+    try {
+      const res = await dispatch(searchActors(searchValue));
+      throwError(res.payload);
+    } catch (error: any) {
+      setErrorMessage(error.message);
+    }
   };
 
   const resetTable = () => {
@@ -104,16 +103,17 @@ const ActorsTable = () => {
   };
 
   const handleDelete = async (id: string) => {
-    const res = await dispatch(deleteActor(id));
-    if (res.type === "actor/deleteActor/rejected") {
-      //@ts-ignore
-      return setErrorMessage(res.error.message);
+    try {
+      const res = await dispatch(deleteActor(id));
+      throwError(res.payload);
+    } catch (error: any) {
+      setErrorMessage(error.message);
     }
     setOpenDelete(false);
   };
 
   const renderTableBody = () => {
-    if (filteredActors && filteredActors.length > 0) {
+    if (filteredActors?.length > 0) {
       if (rowsPerPage > 0) {
         return filteredActors
           .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
@@ -169,36 +169,11 @@ const ActorsTable = () => {
     <>
       <Typography variant="h6">Actors Table</Typography>
       <div className="ma-sm">
-        <Autocomplete
-          freeSolo
-          disableClearable
-          options={actors.map((option) => option.fname)}
+        <SearchInput
+          value={searchValue}
           onChange={handleSearchChange}
-          renderInput={(params) => (
-            <TextField
-              {...params}
-              placeholder="Search Actor"
-              InputProps={{
-                ...params.InputProps,
-                type: "search",
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <SearchIcon />
-                  </InputAdornment>
-                ),
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <Tooltip title="Reset">
-                      <IconButton onClick={() => resetTable()}>
-                        <RestartAltIcon />
-                      </IconButton>
-                    </Tooltip>
-                  </InputAdornment>
-                ),
-              }}
-              size="small"
-            />
-          )}
+          onSearch={onSearch}
+          reset={resetTable}
         />
       </div>
       <TableContainer component={Paper}>
@@ -239,12 +214,13 @@ const ActorsTable = () => {
             </TableRow>
           </TableFooter>
         </Table>
-        <AddActorModal open={openAdd} handleClose={() => setOpenAdd(false)} />
+        <ActorModal open={openAdd} handleClose={() => setOpenAdd(false)} />
         {actorToEdit !== null && (
-          <EditActorModal
+          <ActorModal
             open={openEdit}
             handleClose={handleCloseEdit}
-            actor={actorToEdit}
+            actorToEdit={actorToEdit}
+            title="Edit Actor"
           />
         )}
         <DeleteModal

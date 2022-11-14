@@ -26,7 +26,7 @@ const MovieReview = ({ review }: Iprops) => {
           variant="caption"
           sx={{ width: "35%", flexShrink: 0, color: "text.secondary" }}
         >
-          User: {`[${review.userId}]`}
+          {review.user?.name}
         </Typography>
         <Typography component="legend">Rating: </Typography>
         <Rating name="read-only" value={review.rating} readOnly />

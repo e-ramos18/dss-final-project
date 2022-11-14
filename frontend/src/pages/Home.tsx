@@ -1,11 +1,11 @@
-import SearchAppBar from "../components/SearchAppBar";
+import AppBar from "../components/AppBar";
 import { Outlet } from "react-router-dom";
 import { Container, Paper } from "@mui/material";
 
 const Home = () => {
   return (
     <Paper className="fullHeight">
-      <SearchAppBar />
+      <AppBar />
       <Container>
         <div className="main">
           <Outlet />

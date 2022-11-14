@@ -6,6 +6,7 @@ import { ErrorContext, ErrorContextType } from "../context/ErrorProvider";
 import { fetchActor } from "../misc/actor";
 import { fetchMovies } from "../misc/movie";
 import { useAppDispatch, useAppSelector } from "../redux/hooks";
+import { throwError } from "../utils";
 
 type IParams = {
   id: string;
@@ -23,15 +24,14 @@ const ActorDetails = () => {
   }, [id]);
   const onMount = async () => {
     if (!id) return;
-    const res = await dispatch(fetchActor(id));
-    if (res.type === "actor/fetchActor/rejected") {
-      //@ts-ignore
-      setErrorMessage(res.error.message);
-    }
-    const resp = await dispatch(fetchMovies());
-    if (resp.type === "movie/fetchMovie/rejected") {
-      //@ts-ignore
-      setErrorMessage(resp.error.message);
+
+    try {
+      const res = await dispatch(fetchActor(id));
+      throwError(res.payload);
+      const resp = await dispatch(fetchMovies());
+      throwError(resp.payload);
+    } catch (error: any) {
+      setErrorMessage(error.message);
     }
   };
 

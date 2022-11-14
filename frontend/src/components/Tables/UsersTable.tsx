@@ -7,36 +7,31 @@ import TableRow from "@mui/material/TableRow";
 import HowToRegIcon from "@mui/icons-material/HowToReg";
 import Paper from "@mui/material/Paper";
 import { useContext, useEffect, useState } from "react";
-import { useAppDispatch, useAppSelector } from "../redux/hooks";
-import { IUser, Roles } from "../types";
-import { ErrorContext, ErrorContextType } from "../context/ErrorProvider";
+import { useAppDispatch, useAppSelector } from "../../redux/hooks";
+import { IUser, Roles } from "../../types";
+import { ErrorContext, ErrorContextType } from "../../context/ErrorProvider";
 import {
-  Autocomplete,
   Backdrop,
   Button,
   Chip,
   CircularProgress,
-  IconButton,
-  InputAdornment,
   TableFooter,
   TablePagination,
-  TextField,
   Tooltip,
   Typography,
 } from "@mui/material";
-import DeleteModal from "./DeleteModal";
-import { deleteUser, editUser, fetchUsers } from "../misc/user";
-import AddUserModal from "./AddUserModal";
-import EditUserModal from "./EditUserModal";
+import DeleteModal from "../Modals/DeleteModal";
+import { deleteUser, editUser, fetchUsers, searchUsers } from "../../misc/user";
+import UserModal from "../Modals/UserModal";
 import TablePaginationActions from "./TablePaginationActions";
-import SearchIcon from "@mui/icons-material/Search";
-import RestartAltIcon from "@mui/icons-material/RestartAlt";
-import { setFilteredUsers } from "../features/user/userSlice";
+import { setFilteredUsers } from "../../features/user/userSlice";
+import SearchInput from "../SearchInput";
+import { throwError } from "../../utils";
 
 const UsersTable = () => {
   const { setErrorMessage } = useContext(ErrorContext) as ErrorContextType;
   const dispatch = useAppDispatch();
-  const users = useAppSelector((state) => state.user.users);
+  const { users } = useAppSelector((state) => state.user);
   const filteredUsers = useAppSelector((state) => state.user.filteredUsers);
   const loading = useAppSelector((state) => state.user.loading);
   const [openAdd, setOpenAdd] = useState(false);
@@ -46,20 +41,22 @@ const UsersTable = () => {
   const [userToEdit, setUserToEdit] = useState<IUser | null>(null);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [searchValue, setSearchValue] = useState("");
 
   useEffect(() => {
     onMount();
-  }, [users.length]);
+  }, []);
   const onMount = async () => {
-    const res = await dispatch(fetchUsers());
-    if (res.type === "user/fetchUsers/rejected") {
-      //@ts-ignore
-      setErrorMessage(res.error.message);
+    try {
+      const res = await dispatch(fetchUsers());
+      throwError(res.payload);
+    } catch (err: any) {
+      setErrorMessage(err.message);
     }
   };
 
   const handleChangePage = (
-    event: React.MouseEvent<HTMLButtonElement> | null,
+    _event: React.MouseEvent<HTMLButtonElement> | null,
     newPage: number
   ) => {
     setPage(newPage);
@@ -72,29 +69,19 @@ const UsersTable = () => {
     setPage(0);
   };
 
-  const handleSearchChange = (_event: object, value: string) => {
-    const filtered = users.filter(
-      (user) =>
-        user.name.includes(value) ||
-        user.email.includes(value) ||
-        user.role.includes(value)
-    );
-    dispatch(setFilteredUsers(filtered));
-  };
-
   const resetTable = () => {
     dispatch(setFilteredUsers(users));
   };
 
   const approveUser = async (user: IUser, isApprove: boolean) => {
-    const updatedUser = { ...user };
-    updatedUser.isApproved = isApprove;
-    const res = await dispatch(editUser(updatedUser));
-    if (res.type === "user/editUser/rejected") {
-      //@ts-ignore
-      return setErrorMessage(res.error.message);
+    try {
+      const updatedUser = { ...user };
+      updatedUser.isApproved = isApprove;
+      const res = await dispatch(editUser(updatedUser));
+      throwError(res.payload);
+    } catch (error: any) {
+      setErrorMessage(error.message);
     }
-    onMount();
   };
 
   const handleOpenDelete = (id?: string) => {
@@ -117,12 +104,26 @@ const UsersTable = () => {
   };
 
   const handleDelete = async (id: string) => {
-    const res = await dispatch(deleteUser(id));
-    if (res.type === "user/deleteUser/rejected") {
-      //@ts-ignore
-      return setErrorMessage(res.error.message);
+    try {
+      const res = await dispatch(deleteUser(id));
+      throwError(res.payload);
+      setOpenDelete(false);
+    } catch (error: any) {
+      setErrorMessage(error.message);
     }
-    setOpenDelete(false);
+  };
+
+  const handleSearchChange = (key: string) => {
+    setSearchValue(key);
+  };
+
+  const onSearch = async () => {
+    try {
+      const res = await dispatch(searchUsers(searchValue));
+      throwError(res.payload);
+    } catch (error: any) {
+      setErrorMessage(error.message);
+    }
   };
 
   const renderTableBody = () => {
@@ -239,36 +240,11 @@ const UsersTable = () => {
     <>
       <Typography variant="h6">Users Table</Typography>
       <div className="ma-sm">
-        <Autocomplete
-          freeSolo
-          disableClearable
-          options={users.map((option) => option.name)}
+        <SearchInput
+          value={searchValue}
           onChange={handleSearchChange}
-          renderInput={(params) => (
-            <TextField
-              {...params}
-              placeholder="Search User"
-              InputProps={{
-                ...params.InputProps,
-                type: "search",
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <SearchIcon />
-                  </InputAdornment>
-                ),
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <Tooltip title="Reset">
-                      <IconButton onClick={() => resetTable()}>
-                        <RestartAltIcon />
-                      </IconButton>
-                    </Tooltip>
-                  </InputAdornment>
-                ),
-              }}
-              size="small"
-            />
-          )}
+          onSearch={onSearch}
+          reset={resetTable}
         />
       </div>
       <TableContainer component={Paper}>
@@ -311,12 +287,13 @@ const UsersTable = () => {
           </TableFooter>
         </Table>
       </TableContainer>
-      <AddUserModal open={openAdd} handleClose={() => setOpenAdd(false)} />
+      <UserModal open={openAdd} handleClose={() => setOpenAdd(false)} />
       {userToEdit !== null && (
-        <EditUserModal
+        <UserModal
           open={openEdit}
           handleClose={handleCloseEdit}
-          user={userToEdit}
+          userToEdit={userToEdit}
+          title="Edit User"
         />
       )}
       <DeleteModal

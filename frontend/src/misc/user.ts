@@ -15,6 +15,14 @@ export const fetchUsers = createAsyncThunk("user/fetchUsers", async () => {
   return res.data;
 });
 
+export const searchUsers = createAsyncThunk(
+  "movie/searchUsers",
+  async (key: string) => {
+    const res = await api.get(`/users/${key}/search`);
+    return res.data;
+  }
+);
+
 export const addUser = createAsyncThunk("user/addUser", async (body: IUser) => {
   const token = getItem("token");
   const res = await api.post("/users", body, {

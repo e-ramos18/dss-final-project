@@ -1,90 +1,62 @@
-import {
-  Autocomplete,
-  Backdrop,
-  CircularProgress,
-  IconButton,
-  InputAdornment,
-  TextField,
-  Tooltip,
-  Typography,
-} from "@mui/material";
-import { useEffect, useState } from "react";
-import { fetchActors } from "../misc/actor";
+import { Backdrop, CircularProgress, Typography } from "@mui/material";
+import { useContext, useEffect, useState } from "react";
+import { fetchActors, searchActors } from "../misc/actor";
 import { useAppDispatch, useAppSelector } from "../redux/hooks";
-import SearchIcon from "@mui/icons-material/Search";
-import RestartAltIcon from "@mui/icons-material/RestartAlt";
-import { IActor } from "../types";
 import { useNavigate } from "react-router-dom";
+import { throwError } from "../utils";
+import { ErrorContext, ErrorContextType } from "../context/ErrorProvider";
+import { setFilteredActors } from "../features/actor/actorSlice";
+import SearchInput from "../components/SearchInput";
 
 const ActorsList = () => {
-  const actors = useAppSelector((state) => state.actor.actors);
+  const { setErrorMessage } = useContext(ErrorContext) as ErrorContextType;
+  const { actors, filteredActors } = useAppSelector((state) => state.actor);
   const loading = useAppSelector((state) => state.actor.loading);
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-  const [filteredActors, setFilteredActors] = useState<IActor[] | null>(null);
+  const [searchValue, setSearchValue] = useState("");
+
   useEffect(() => {
     onMount();
   }, [actors.length]);
   const onMount = async () => {
-    const res = await dispatch(fetchActors());
-    if (res.type === "actor/fetchActors/rejected") {
-      //@ts-ignore
-      setErrorMessage(res.error.message);
+    try {
+      const res = await dispatch(fetchActors());
+      throwError(res.payload);
+    } catch (error: any) {
+      setErrorMessage(error.message);
     }
-    setFilteredActors(actors);
-  };
-  const resetTable = () => {
-    setFilteredActors(actors);
   };
 
-  const handleSearchChange = (_event: object, value: string) => {
-    const filtered = actors.filter(
-      (actor) =>
-        actor.fname.includes(value) ||
-        actor.lname.includes(value) ||
-        actor.gender.includes(value)
-    );
-    setFilteredActors(filtered);
+  const resetTable = () => {
+    dispatch(setFilteredActors(actors));
+  };
+
+  const handleSearchChange = (key: string) => {
+    setSearchValue(key);
+  };
+
+  const onSearch = async () => {
+    try {
+      const res = await dispatch(searchActors(searchValue));
+      throwError(res.payload);
+    } catch (error: any) {
+      setErrorMessage(error.message);
+    }
   };
 
   return (
     <>
       <Typography variant="h6">Actors</Typography>
       <div className="ma-sm">
-        <Autocomplete
-          freeSolo
-          disableClearable
-          options={actors.map((option) => option.fname)}
+        <SearchInput
+          value={searchValue}
           onChange={handleSearchChange}
-          renderInput={(params) => (
-            <TextField
-              {...params}
-              placeholder="Search Actor"
-              InputProps={{
-                ...params.InputProps,
-                type: "search",
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <SearchIcon />
-                  </InputAdornment>
-                ),
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <Tooltip title="Reset">
-                      <IconButton onClick={() => resetTable()}>
-                        <RestartAltIcon />
-                      </IconButton>
-                    </Tooltip>
-                  </InputAdornment>
-                ),
-              }}
-              size="small"
-            />
-          )}
+          onSearch={onSearch}
+          reset={resetTable}
         />
       </div>
-
-      {filteredActors && filteredActors.length > 0 ? (
+      {filteredActors?.length > 0 && (
         <div className="actorsList">
           {filteredActors.map((actor) => (
             <div
@@ -99,10 +71,10 @@ const ActorsList = () => {
             </div>
           ))}
         </div>
-      ) : (
+      )}
+      {!loading && filteredActors.length <= 0 && (
         <h2 className="center">No Actors.</h2>
       )}
-
       <Backdrop open={loading}>
         <CircularProgress color="inherit" />
       </Backdrop>

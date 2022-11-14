@@ -9,6 +9,14 @@ export const fetchActors = createAsyncThunk("actor/fetchActors", async () => {
   return res.data;
 });
 
+export const searchActors = createAsyncThunk(
+  "actor/searchActors",
+  async (key: string) => {
+    const res = await api.get(`/actors/${key}/search`);
+    return res.data;
+  }
+);
+
 export const fetchActor = createAsyncThunk(
   "actor/fetchActor",
   async (id: string) => {
@@ -33,9 +41,9 @@ export const addActor = createAsyncThunk(
 
 export const editActor = createAsyncThunk(
   "actor/editMovie",
-  async (body: IActor) => {
+  async (body: Partial<IActor>) => {
     const token = getItem("token");
-    const res = await api.put(`/actors/${body.id}`, body, {
+    const res = await api.patch(`/actors/${body.id}`, body, {
       headers: {
         "Content-Type": "application/json",
         Authorization: "Bearer " + token,

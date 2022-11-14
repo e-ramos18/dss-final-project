@@ -1,18 +1,22 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { addUser, deleteUser, editUser, fetchUsers } from "../../misc/user";
-import { IUser } from "../../types";
+import {
+  addUser,
+  deleteUser,
+  editUser,
+  fetchUsers,
+  searchUsers,
+} from "../../misc/user";
+import { CustomApiResponse, IUser } from "../../types";
 
 type InitialState = {
   users: IUser[];
   filteredUsers: IUser[];
   loading: boolean;
-  error: string;
 };
 const initialState: InitialState = {
   users: [],
   filteredUsers: [],
   loading: false,
-  error: "",
 };
 
 const userSlice = createSlice({
@@ -24,24 +28,38 @@ const userSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
-    // Fetch movies
+    // Fetch users
     builder.addCase(fetchUsers.pending, (state) => {
       state.loading = true;
     });
     builder.addCase(
       fetchUsers.fulfilled,
-      (state, action: PayloadAction<IUser[]>) => {
+      (state, action: PayloadAction<CustomApiResponse<{}>>) => {
         state.loading = false;
-        state.users = action.payload;
-        state.filteredUsers = action.payload;
-        state.error = "";
+        state.users = action.payload.data as IUser[];
+        state.filteredUsers = action.payload.data as IUser[];
       }
     );
     builder.addCase(fetchUsers.rejected, (state, action) => {
       state.loading = false;
       state.users = [];
       state.filteredUsers = [];
-      state.error = action.error.message || "Something went wrong";
+    });
+
+    // Search users
+    builder.addCase(searchUsers.pending, (state) => {
+      state.loading = true;
+    });
+    builder.addCase(
+      searchUsers.fulfilled,
+      (state, action: PayloadAction<CustomApiResponse<{}>>) => {
+        state.loading = false;
+        state.filteredUsers = action.payload.data as IUser[];
+      }
+    );
+    builder.addCase(searchUsers.rejected, (state, action) => {
+      state.loading = false;
+      state.users = [];
     });
 
     // Add a user
@@ -50,16 +68,18 @@ const userSlice = createSlice({
     });
     builder.addCase(
       addUser.fulfilled,
-      (state, action: PayloadAction<IUser>) => {
+      (state, action: PayloadAction<CustomApiResponse<{}>>) => {
         state.loading = false;
-        state.users = state.users.concat(action.payload);
-        state.filteredUsers = state.filteredUsers.concat(action.payload);
-        state.error = "";
+        if (action.payload.data) {
+          state.users = state.users.concat(action.payload.data as IUser);
+          state.filteredUsers = state.filteredUsers.concat(
+            action.payload.data as IUser
+          );
+        }
       }
     );
     builder.addCase(addUser.rejected, (state, action) => {
       state.loading = false;
-      state.error = action.error.message || "Something went wrong";
     });
 
     // Edit a user
@@ -68,23 +88,21 @@ const userSlice = createSlice({
     });
     builder.addCase(
       editUser.fulfilled,
-      (state, action: PayloadAction<IUser>) => {
+      (state, action: PayloadAction<CustomApiResponse<{}>>) => {
         state.loading = false;
         const newUsers: IUser[] = [...state.users];
-        //finding index of the user
-        const index: number = newUsers.findIndex(
-          (m) => m.id === action.payload.id
-        );
-
-        newUsers[index] = action.payload;
-        state.users = newUsers;
-        state.filteredUsers = newUsers;
-        state.error = "";
+        if (action.payload.data) {
+          const data = action.payload.data as IUser;
+          //finding index of the user
+          const index: number = newUsers.findIndex((m) => m.id === data.id);
+          newUsers[index] = data;
+          state.users = newUsers;
+          state.filteredUsers = newUsers;
+        }
       }
     );
     builder.addCase(editUser.rejected, (state, action) => {
       state.loading = false;
-      state.error = action.error.message || "Something went wrong";
     });
 
     // Delete a user
@@ -93,19 +111,19 @@ const userSlice = createSlice({
     });
     builder.addCase(
       deleteUser.fulfilled,
-      (state, action: PayloadAction<string>) => {
-        const newUsers = state.users.filter(
-          (user: IUser) => user.id !== action.payload
-        );
-        state.loading = false;
-        state.users = newUsers;
-        state.filteredUsers = newUsers;
-        state.error = "";
+      (state, action: PayloadAction<CustomApiResponse<{}>>) => {
+        if (action.payload.data) {
+          const newUsers = state.users.filter(
+            (user: IUser) => user.id !== (action.payload.data as string)
+          );
+          state.loading = false;
+          state.users = newUsers;
+          state.filteredUsers = newUsers;
+        }
       }
     );
     builder.addCase(deleteUser.rejected, (state, action) => {
       state.loading = false;
-      state.error = action.error.message || "Something went wrong";
     });
   },
 });
