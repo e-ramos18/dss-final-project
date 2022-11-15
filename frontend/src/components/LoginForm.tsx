@@ -44,6 +44,7 @@ const LoginForm = () => {
       </div>
       <div className="ma-sm">
         <TextField
+          data-testid="pass"
           label="Password"
           value={credentials.password}
           type="password"

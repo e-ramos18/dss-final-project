@@ -9,7 +9,7 @@ import {
 } from "../../misc/actor";
 import { CustomApiResponse, IActor } from "../../types";
 
-type InitialState = {
+export type InitialState = {
   actors: IActor[];
   filteredActors: IActor[];
   actor: IActor | null;

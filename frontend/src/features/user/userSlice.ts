@@ -8,7 +8,7 @@ import {
 } from "../../misc/user";
 import { CustomApiResponse, IUser } from "../../types";
 
-type InitialState = {
+export type InitialState = {
   users: IUser[];
   filteredUsers: IUser[];
   loading: boolean;

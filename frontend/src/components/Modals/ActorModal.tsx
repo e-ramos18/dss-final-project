@@ -70,8 +70,8 @@ const ActorModal = ({ open, handleClose, actorToEdit, title }: Iprops) => {
       isNotEmpty(newActor.lname, "last name");
       isNotEmpty(newActor.age, "age");
       isNotEmpty(newActor.about, "about");
-      isNotEmpty(newActor.gender, "gender");
       isNotEmpty(newActor.imageUrl, "image");
+      isNotEmpty(newActor.gender, "gender");
       const actor: IActor = {
         fname: newActor.fname,
         lname: newActor.lname,
@@ -159,6 +159,17 @@ const ActorModal = ({ open, handleClose, actorToEdit, title }: Iprops) => {
             <div className="ma-sm">
               <TextField
                 fullWidth
+                label="Image URL"
+                value={newActor.imageUrl}
+                onChange={(e) =>
+                  setNewActor({ ...newActor, imageUrl: e.target.value })
+                }
+              />
+            </div>
+            <div className="ma-sm">
+              <TextField
+                data-testid="selectGender"
+                fullWidth
                 select
                 label="Select gender"
                 value={newActor.gender}
@@ -172,16 +183,6 @@ const ActorModal = ({ open, handleClose, actorToEdit, title }: Iprops) => {
                   </MenuItem>
                 ))}
               </TextField>
-            </div>
-            <div className="ma-sm">
-              <TextField
-                fullWidth
-                label="Image URL"
-                value={newActor.imageUrl}
-                onChange={(e) =>
-                  setNewActor({ ...newActor, imageUrl: e.target.value })
-                }
-              />
             </div>
           </Box>
         </DialogContent>

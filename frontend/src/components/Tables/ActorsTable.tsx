@@ -42,7 +42,7 @@ const ActorsTable = () => {
 
   useEffect(() => {
     onMount();
-  }, [actors.length]);
+  }, []);
   const onMount = async () => {
     try {
       const res = await dispatch(fetchActors());

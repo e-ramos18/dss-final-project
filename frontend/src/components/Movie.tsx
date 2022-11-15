@@ -10,6 +10,7 @@ const Movie = ({ movie }: IProps) => {
   return (
     <div className="movie">
       <div
+        data-testid="movieImage"
         className="movieImage"
         onClick={() => navigate(`/movie/${movie.id}`)}
       >

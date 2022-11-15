@@ -88,6 +88,7 @@ const RegisterForm = () => {
       </div>
       <div className="ma-sm">
         <TextField
+          data-testid="pass"
           label="Password"
           type="password"
           value={user.password}
@@ -96,6 +97,7 @@ const RegisterForm = () => {
       </div>
       <div className="ma-sm">
         <TextField
+          data-testid="cpass"
           label="Confirm Password"
           type="password"
           value={cpassword}

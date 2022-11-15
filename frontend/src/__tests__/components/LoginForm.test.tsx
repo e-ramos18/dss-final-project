@@ -27,10 +27,22 @@ describe("<LoginForm/>", () => {
     expect(emailInputElement).toBeInTheDocument();
   });
 
+  test("should render TextField Password", () => {
+    renderApp();
+    const passwordInputElement = screen.getByTestId("pass");
+    expect(passwordInputElement).toBeInTheDocument();
+  });
+
   test("should render Button Login", () => {
     renderApp();
     const loginBtnElement = screen.getByRole("button", { name: "Login" });
     expect(loginBtnElement).toBeInTheDocument();
+  });
+
+  test("should render text", () => {
+    renderApp();
+    const text = screen.getByText("Doesn't an account?");
+    expect(text).toBeInTheDocument();
   });
 
   test("should render Button Sign up", () => {

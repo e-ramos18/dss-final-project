@@ -9,7 +9,7 @@ import {
 } from "../../misc/movie";
 import { CustomApiResponse, IMovie } from "../../types";
 
-type InitialState = {
+export type InitialState = {
   movies: IMovie[];
   filteredMovies: IMovie[];
   movie: IMovie | null;

@@ -2,7 +2,7 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { addReview, editReview, fetchReviews } from "../../misc/review";
 import { CustomApiResponse, IReview } from "../../types";
 
-type InitialState = {
+export type InitialState = {
   reviews: IReview[];
   filteredReviews: IReview[];
   loading: boolean;
