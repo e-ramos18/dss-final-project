@@ -2,10 +2,9 @@ import NodeRSA from 'node-rsa';
 import fs from 'fs';
 import path from 'path';
 
-export const resDecrypt = (text: any, key: string) => {
+export const resDecrypt = (text: string, key: string) => {
   let keyPrivate = new NodeRSA(key);
   let decrypt = keyPrivate.decrypt(text, 'utf8');
-  console.log({decrypt});
   return decrypt;
 };
 

@@ -1,7 +1,7 @@
 import NodeRSA from "node-rsa";
 
-export const rsaEncrypt = (text: any, key: string) => {
+export const rsaEncrypt = (text: string, key: string) => {
   let keyPublic = new NodeRSA(key);
-  const encrypted = keyPublic.encrypt(JSON.stringify(text), "base64");
+  const encrypted = keyPublic.encrypt(text, "base64");
   return encrypted;
 };
