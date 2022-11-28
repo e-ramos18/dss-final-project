@@ -14,7 +14,7 @@ const LoginForm = () => {
     password: "",
   });
 
-  const handleRegister = async () => {
+  const handleLogin = async () => {
     try {
       isNotEmpty(credentials.email, "email");
       if (validatEmail(credentials.email))
@@ -53,7 +53,7 @@ const LoginForm = () => {
           }
         />
       </div>
-      <Button variant="contained" onClick={handleRegister}>
+      <Button variant="contained" onClick={handleLogin}>
         Login
       </Button>
       <div>

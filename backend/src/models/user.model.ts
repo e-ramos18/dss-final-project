@@ -1,4 +1,5 @@
-import {Entity, model, property} from '@loopback/repository';
+import {Entity, model, property, hasOne} from '@loopback/repository';
+import {UserCredential} from './user-credential.model';
 
 @model({settings: {strict: false}})
 export class User extends Entity {
@@ -17,12 +18,6 @@ export class User extends Entity {
     },
   })
   email: string;
-
-  @property({
-    type: 'string',
-    required: true,
-  })
-  password: string;
 
   @property({
     type: 'string',
@@ -48,6 +43,8 @@ export class User extends Entity {
   })
   createdAt?: string;
 
+  @hasOne(() => UserCredential)
+  userCredential: UserCredential;
   // Define well-known properties here
 
   // Indexer property to allow additional data

@@ -1,6 +1,7 @@
 import { getItem, setItem } from "../utils";
 import api from "./api";
 import { APIResponse } from "../types";
+import { rsaEncrypt } from "../utils/rsa";
 
 export const register = async (
   name: string,
@@ -10,10 +11,12 @@ export const register = async (
   isApproved: boolean
 ): Promise<string> => {
   try {
+    const publicKey = await api.get("/users/key");
+    const encryptedPassword = rsaEncrypt(password, publicKey.data.data);
     await api.post("/users/signup", {
       name,
       email,
-      password,
+      password: encryptedPassword,
       role,
       isApproved,
     });
@@ -29,9 +32,11 @@ export const login = async (
   password: string
 ): Promise<string> => {
   try {
+    const publicKey = await api.get("/users/key");
+    const encryptedPassword = rsaEncrypt(password, publicKey.data.data);
     const res = await api.post("/users/login", {
       email,
-      password,
+      password: encryptedPassword,
     });
     if (!res.data.success) {
       return res.data.message;

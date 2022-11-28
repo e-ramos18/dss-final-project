@@ -166,6 +166,27 @@ export const userResponseSchema = {
       },
     },
   },
+  publicKey: {
+    description: 'Get public key',
+    content: {
+      'application/json': {
+        schema: {
+          type: 'object',
+          properties: {
+            success: {
+              type: 'boolean',
+            },
+            data: {
+              type: 'string',
+            },
+            message: {
+              type: 'string',
+            },
+          },
+        },
+      },
+    },
+  },
   addUser: {
     description: 'User model instance',
     content: {

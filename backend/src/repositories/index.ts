@@ -3,3 +3,4 @@ export * from './movie.repository';
 export * from './actor.repository';
 export * from './review.repository';
 export * from './contract.repository';
+export * from './user-credential.repository';

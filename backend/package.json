@@ -23,7 +23,7 @@
     "eslint:fix": "npm run eslint -- --fix",
     "pretest": "npm run rebuild",
     "test": "nyc lb-mocha --allow-console-logs \"dist/__tests__\"",
-    "posttest": "npm run lint",
+    "posttest": "npm run lint && lb-nyc report --reporter=lcov --report-dir=.nyc_coverage && sonar-scanner",
     "test:dev": "lb-mocha --allow-console-logs dist/__tests__/**/*.js && npm run posttest",
     "test:coverage": "lb-nyc report --reporter=lcov --report-dir=.nyc_coverage",
     "docker:build": "docker build -t dss-backend .",
@@ -36,7 +36,8 @@
     "start": "node -r source-map-support/register .",
     "clean": "lb-clean dist *.tsbuildinfo .eslintcache",
     "rebuild": "npm run clean && npm run build",
-    "dev": "nodemon src/index.ts"
+    "dev": "nodemon src/index.ts",
+    "generate:key": "node src/utils/rsa-generator.ts"
   },
   "repository": {
     "type": "git",
@@ -63,6 +64,7 @@
     "isemail": "^3.2.0",
     "jsonwebtoken": "^8.5.1",
     "loopback-connector-mongodb": "^5.6.0",
+    "node-rsa": "^1.1.1",
     "tslib": "^2.0.0"
   },
   "devDependencies": {
@@ -72,6 +74,7 @@
     "@types/bcryptjs": "^2.4.2",
     "@types/jsonwebtoken": "^8.5.9",
     "@types/node": "^14.18.26",
+    "@types/node-rsa": "^1.1.1",
     "eslint": "^8.22.0",
     "nyc": "^15.1.0",
     "source-map-support": "^0.5.21",

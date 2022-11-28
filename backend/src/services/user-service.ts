@@ -6,6 +6,7 @@ import {securityId, UserProfile} from '@loopback/security';
 import {PasswordHasherBindings} from '../keys';
 import {User} from '../models';
 import {Credentials, UserRepository} from '../repositories/user.repository';
+import {getPrivateKey, resDecrypt} from '../utils/rsa';
 import {BcryptHasher} from './hash.password';
 
 export class MyUserService implements UserService<User, Credentials> {
@@ -18,6 +19,7 @@ export class MyUserService implements UserService<User, Credentials> {
     public hasher: BcryptHasher,
   ) {}
   async verifyCredentials(credentials: Credentials): Promise<User> {
+    const invalidCredentialsError = 'Invalid credentials.';
     // implement this method
     const foundUser = await this.userRepository.findOne({
       where: {
@@ -31,12 +33,19 @@ export class MyUserService implements UserService<User, Credentials> {
     if (!foundUser.isApproved) {
       throw new HttpErrors.Unauthorized('Account needs approval.');
     }
+
+    const foundCredential = await this.userRepository.findCredential(
+      foundUser.id,
+    );
+
+    if (!foundCredential) throw new Error(invalidCredentialsError);
+
     const passwordMatched = await this.hasher.comparePassword(
-      credentials.password,
-      foundUser.password,
+      resDecrypt(credentials.password, getPrivateKey()),
+      foundCredential.password,
     );
     if (!passwordMatched)
-      throw new HttpErrors.Unauthorized('Invalid credentials.');
+      throw new HttpErrors.Unauthorized(invalidCredentialsError);
     return foundUser;
   }
   convertToUserProfile(user: User): UserProfile {

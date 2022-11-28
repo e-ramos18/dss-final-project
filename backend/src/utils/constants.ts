@@ -8,6 +8,7 @@ export const responseMessage = {
   registered: 'Registered successfully.',
   loggedin: 'Loggedin successfully.',
   getCurrentUser: 'Get profile successfully.',
+  getKey: 'Get key successfully.',
   addedUser: 'Added user successfully.',
   fetchedUsers: 'Fetched all users successfully.',
   fetchedUser: 'Fetch user successfully.',

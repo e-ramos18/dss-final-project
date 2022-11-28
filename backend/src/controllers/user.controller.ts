@@ -21,7 +21,7 @@ import {
   UserServiceBindings,
 } from '../keys';
 import {User} from '../models';
-import {Credentials, UserRepository} from '../repositories';
+import {Credentials, UserRegister, UserRepository} from '../repositories';
 import {validateCredentials} from '../services';
 import {BcryptHasher} from '../services/hash.password';
 import {JWTService} from '../services/jwt-service';
@@ -30,6 +30,7 @@ import {CustomResponse} from '../types';
 import {responseMessage} from '../utils/constants';
 import {tryCatch} from '../utils/helper';
 import {userResponseSchema} from './responseSchema';
+import {getPrivateKey, getPublicKey, resDecrypt} from '../utils/rsa';
 
 export class UserController {
   constructor(
@@ -51,14 +52,22 @@ export class UserController {
 
   @post('/users/signup')
   @response(200, userResponseSchema.register)
-  async signup(@requestBody() userData: User): Promise<CustomResponse<{}>> {
+  async signup(
+    @requestBody() userData: UserRegister,
+  ): Promise<CustomResponse<{}>> {
     const res = await tryCatch(
       async () => {
+        userData.password = resDecrypt(userData.password, getPrivateKey());
         validateCredentials(_.pick(userData, ['email', 'password']));
-        userData.password = await this.hasher.hashPassword(userData.password);
         try {
-          const savedUser = await this.userRepository.create(userData);
-          return _.omit(savedUser, ['password']);
+          const savedUser = await this.userRepository.create(
+            _.omit(userData, ['password']),
+          );
+          const password = await this.hasher.hashPassword(userData.password);
+          await this.userRepository
+            .userCredential(savedUser.id)
+            .create({password});
+          return savedUser;
         } catch (error) {
           if (error.code === 11000) {
             throw new HttpErrors.Conflict('Email is already taken.');
@@ -111,6 +120,19 @@ export class UserController {
     return res;
   }
 
+  @get('/users/key')
+  @response(200, userResponseSchema.publicKey)
+  async getKey(): Promise<CustomResponse<{}>> {
+    return tryCatch(
+      async () => {
+        const publicKey = getPublicKey();
+        return Promise.resolve(publicKey);
+      },
+      null,
+      responseMessage.getKey,
+    );
+  }
+
   @authenticate({
     strategy: 'jwt',
     options: {required: [Roles.RootAdmin, Roles.Admin]},
@@ -121,8 +143,13 @@ export class UserController {
     const res = tryCatch(
       async () => {
         validateCredentials(_.pick(user, ['email', 'password']));
-        user.password = await this.hasher.hashPassword(user.password);
-        const savedUser = await this.userRepository.create(user);
+        const savedUser = await this.userRepository.create(
+          _.omit(user, ['password']),
+        );
+        const password = await this.hasher.hashPassword(user.password);
+        await this.userRepository
+          .userCredential(savedUser.id)
+          .create({password});
         return _.omit(savedUser, ['password']);
       },
       null,
